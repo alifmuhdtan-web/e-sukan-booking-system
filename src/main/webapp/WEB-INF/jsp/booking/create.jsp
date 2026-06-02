@@ -1,39 +1,138 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
-    String facilityId = (String) request.getAttribute("facilityId");
+    String facilityId = request.getParameter("facilityId");
+    if (facilityId == null) {
+        facilityId = (String) request.getAttribute("facilityId");
+    }
+    String error = request.getParameter("error");
+    if (error == null) {
+        error = (String) request.getAttribute("error");
+    }
 %>
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Book Facility - E-Sukan</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
-        .navbar { background: #667eea; padding: 15px 30px; color: white; }
-        .navbar a { color: white; text-decoration: none; margin-left: 20px; float: right; }
-        .container { max-width: 500px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
-        button { background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
-        .error { color: red; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        .navbar {
+            background: #667eea;
+            padding: 15px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .info {
+            background: #e6f7ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #0050b3;
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <strong>🏟️ E-Sukan</strong>
-        <a href="logout">Logout</a>
-        <a href="MyBookingsServlet">My Bookings</a>
+        <div><strong>🏟️ E-Sukan</strong> - Book Facility</div>
+        <div>
+            <a href="${pageContext.request.contextPath}/student/dashboard">Dashboard</a>
+            <a href="${pageContext.request.contextPath}/logout">Logout</a>
+        </div>
     </div>
     <div class="container">
         <h1>Book Facility</h1>
         
-        <% if (request.getParameter("error") != null) { %>
-            <p class="error"><%= request.getParameter("error") %></p>
+        <% if (error != null) { %>
+            <div class="error-message">
+                <strong>Error:</strong> <%= error %>
+            </div>
         <% } %>
         
-        <form action="CreateBookingServlet" method="post">
-            <input type="hidden" name="facilityId" value="<%= facilityId %>">
+        <div class="info">
+            💡 Rate: RM 15.00 per hour for Badminton Court
+        </div>
+        
+        <form action="${pageContext.request.contextPath}/CreateBookingServlet" method="post">
+            <input type="hidden" name="facilityId" value="<%= facilityId != null ? facilityId : "1" %>">
             
             <div class="form-group">
                 <label>Booking Date:</label>
@@ -43,6 +142,7 @@
             <div class="form-group">
                 <label>Start Time:</label>
                 <select name="startTime" required>
+                    <option value="">Select start time</option>
                     <option value="08:00">08:00</option>
                     <option value="09:00">09:00</option>
                     <option value="10:00">10:00</option>
@@ -63,6 +163,7 @@
             <div class="form-group">
                 <label>End Time:</label>
                 <select name="endTime" required>
+                    <option value="">Select end time</option>
                     <option value="09:00">09:00</option>
                     <option value="10:00">10:00</option>
                     <option value="11:00">11:00</option>
@@ -82,11 +183,15 @@
             
             <div class="form-group">
                 <label>Total Cost (RM):</label>
-                <input type="number" name="totalCost" step="0.01" required>
+                <input type="number" name="totalCost" step="0.01" placeholder="e.g., 30.00" required>
             </div>
             
             <button type="submit">Confirm Booking</button>
         </form>
+        
+        <div class="back-link">
+            <a href="${pageContext.request.contextPath}/student/dashboard">← Back to Dashboard</a>
+        </div>
     </div>
 </body>
 </html>

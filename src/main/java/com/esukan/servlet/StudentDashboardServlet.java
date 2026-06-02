@@ -21,30 +21,42 @@ public class StudentDashboardServlet extends HttpServlet {
             return;
         }
         
-        String username = (String) session.getAttribute("username");
         String fullName = (String) session.getAttribute("fullName");
         
         response.setContentType("text/html");
-        response.getWriter().println("<html><head><title>Student Dashboard</title>");
+        response.getWriter().println("<!DOCTYPE html>");
+        response.getWriter().println("<html>");
+        response.getWriter().println("<head>");
+        response.getWriter().println("<title>Student Dashboard - E-Sukan</title>");
         response.getWriter().println("<style>");
-        response.getWriter().println("body { font-family: Arial; margin: 0; padding: 0; background: #f5f5f5; }");
-        response.getWriter().println(".navbar { background: #667eea; padding: 15px 30px; color: white; }");
-        response.getWriter().println(".container { max-width: 800px; margin: 30px auto; background: white; padding: 30px; border-radius: 10px; }");
+        response.getWriter().println("body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }");
+        response.getWriter().println(".navbar { background: #667eea; padding: 15px 30px; color: white; display: flex; justify-content: space-between; }");
+        response.getWriter().println(".navbar a { color: white; text-decoration: none; margin-left: 20px; }");
+        response.getWriter().println(".container { max-width: 800px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }");
         response.getWriter().println("h1 { color: #333; }");
-        response.getWriter().println("a { display: inline-block; margin: 10px 0; color: #667eea; text-decoration: none; }");
+        response.getWriter().println(".btn { display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px; font-size: 16px; }");
+        response.getWriter().println(".btn:hover { background: #5a67d8; }");
+        response.getWriter().println(".success { color: green; }");
+        response.getWriter().println("ul { list-style: none; padding: 0; }");
+        response.getWriter().println("li { margin: 15px 0; }");
         response.getWriter().println("</style>");
-        response.getWriter().println("</head><body>");
-        response.getWriter().println("<div class='navbar'><strong>🏟️ E-Sukan</strong> - Student Portal</div>");
+        response.getWriter().println("</head>");
+        response.getWriter().println("<body>");
+        response.getWriter().println("<div class='navbar'>");
+        response.getWriter().println("<div><strong>E-Sukan</strong> - Student Portal</div>");
+        response.getWriter().println("<div><a href='" + request.getContextPath() + "/logout'>Logout</a></div>");
+        response.getWriter().println("</div>");
         response.getWriter().println("<div class='container'>");
         response.getWriter().println("<h1>Welcome, " + fullName + "!</h1>");
-        response.getWriter().println("<p>You have successfully logged in.</p>");
+        response.getWriter().println("<p class='success'>You have successfully logged in.</p>");
         response.getWriter().println("<hr>");
         response.getWriter().println("<h3>Quick Links:</h3>");
         response.getWriter().println("<ul>");
-        response.getWriter().println("<li><a href='" + request.getContextPath() + "/MyBookingsServlet'>My Bookings</a></li>");
-        response.getWriter().println("<li><a href='" + request.getContextPath() + "/CreateBookingServlet?facilityId=1'>Book Facility</a></li>");
-        response.getWriter().println("<li><a href='" + request.getContextPath() + "/logout'>Logout</a></li>");
+        response.getWriter().println("<li><a href='" + request.getContextPath() + "/MyBookingsServlet' class='btn'>My Bookings</a></li>");
+        response.getWriter().println("<li><a href='" + request.getContextPath() + "/CreateBookingServlet?facilityId=1' class='btn'>Book Facility</a></li>");
         response.getWriter().println("</ul>");
-        response.getWriter().println("</div></body></html>");
+        response.getWriter().println("</div>");
+        response.getWriter().println("</body>");
+        response.getWriter().println("</html>");
     }
 }
