@@ -1,33 +1,51 @@
-package servlet;
+package com.esukan.servlet;
 
-import dao.BookingDAO;
-import model.Booking;
-
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
-
+import com.esukan.dao.BookingDAO;
+import com.esukan.model.Booking;
 import java.io.IOException;
 import java.util.List;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-@WebServlet("/MyBookingsServlet")
+@WebServlet(name = "MyBookingsServlet", urlPatterns = {"/MyBookingsServlet"})
 public class MyBookingsServlet extends HttpServlet {
-
-    protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response)
+    
+    private BookingDAO bookingDAO;
+    
+    @Override
+    public void init() {
+        bookingDAO = new BookingDAO();
+    }
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        int userId = Integer.parseInt(request.getParameter("userId"));
-
-        BookingDAO dao = new BookingDAO();
-
-        List<Booking> bookingList = dao.getBookingsByUser(userId);
-
+        
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        
+        int userId = (int) session.getAttribute("userId");
+        
+        List<Booking> bookingList = bookingDAO.getBookingsByUser(userId);
         request.setAttribute("bookingList", bookingList);
-
-        RequestDispatcher dispatcher =
-                request.getRequestDispatcher("myBookings.jsp");
-
+        
+        // Add success/error messages if present
+        if (request.getParameter("success") != null) {
+            request.setAttribute("success", request.getParameter("success"));
+        }
+        if (request.getParameter("error") != null) {
+            request.setAttribute("error", request.getParameter("error"));
+        }
+        
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/booking/list.jsp");
         dispatcher.forward(request, response);
     }
 }
