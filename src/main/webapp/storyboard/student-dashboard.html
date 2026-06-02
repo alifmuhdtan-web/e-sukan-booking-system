@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard - E-Sukan Storyboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .navbar { background: #667eea; padding: 15px 30px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .navbar a { color: white; text-decoration: none; margin-left: 20px; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .welcome-card { background: white; border-radius: 10px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .stat-card h3 { color: #666; font-size: 14px; margin-bottom: 10px; }
+        .stat-card .number { font-size: 32px; font-weight: bold; color: #667eea; }
+        .section { background: white; border-radius: 10px; padding: 20px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .section h2 { color: #333; margin-bottom: 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f4f4f4; }
+        .btn { display: inline-block; background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px; }
+        .nav-links { text-align: center; margin-top: 20px; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div><strong>E-Sukan</strong> - Student Portal</div>
+        <div>
+            <a href="my-bookings.html">My Bookings</a>
+            <a href="create-booking.html">Book Facility</a>
+            <a href="login.html">Logout</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="welcome-card">
+            <h1>Welcome, Ali Bin Mohamed!</h1>
+            <p>Student ID: A123456 | Email: ali@student.edu.my</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card"><h3>Total Bookings</h3><div class="number">3</div></div>
+            <div class="stat-card"><h3>Active Rentals</h3><div class="number">1</div></div>
+            <div class="stat-card"><h3>Pending Payments</h3><div class="number">RM 45.00</div></div>
+        </div>
+        
+        <div class="section">
+            <h2>Upcoming Bookings</h2>
+            <table>
+                <thead><tr><th>Facility</th><th>Date</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr><td>Badminton Court 1</td><td>2026-06-05</td><td>10:00 - 12:00</td><td>Confirmed</td><td><a href="#">Cancel</a></td></tr>
+                    <tr><td>Swimming Pool</td><td>2026-06-07</td><td>09:00 - 10:00</td><td>Confirmed</td><td><a href="#">Cancel</a></td></tr>
+                    <tr><td>Futsal Field A</td><td>2026-06-10</td><td>20:00 - 22:00</td><td>Pending</td><td><a href="#">Cancel</a></td></tr>
+                </tbody>
+            </table>
+            <a href="create-booking.html" class="btn">+ New Booking</a>
+        </div>
+        
+        <div class="section">
+            <h2>Active Equipment Rentals</h2>
+            <table>
+                <thead><tr><th>Equipment</th><th>Rental Date</th><th>Return Date</th><th>Status</th></tr></thead>
+                <tbody><tr><td>Badminton Racket (2)</td><td>2026-06-01</td><td>2026-06-04</td><td>Active</td></tr></tbody>
+            </table>
+        </div>
+        
+        <div class="nav-links"><a href="index.html">Back to Navigation</a></div>
+    </div>
+    <div class="footer"><p>E-Sukan - Campus Facility & Equipment Booking System | Storyboard Prototype</p></div>
+</body>
+</html>

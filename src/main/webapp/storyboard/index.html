@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>E-Sukan - Storyboard Navigation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+        h1 { text-align: center; color: white; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #e0e0e0; margin-bottom: 40px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .card h2 { color: #667eea; margin-bottom: 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        .card ul { list-style: none; }
+        .card li { margin: 10px 0; }
+        .card a { color: #333; text-decoration: none; display: block; padding: 8px 12px; background: #f5f5f5; border-radius: 5px; transition: all 0.3s; }
+        .card a:hover { background: #667eea; color: white; }
+        .footer { text-align: center; color: white; margin-top: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>E-Sukan Campus Booking System</h1>
+        <p class="subtitle">Storyboard / Mockup Navigation</p>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>Authentication Module</h2>
+                <ul>
+                    <li><a href="login.html">Login Page</a></li>
+                    <li><a href="register.html">Registration Page</a></li>
+                    <li><a href="profile.html">User Profile</a></li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h2>Student Module</h2>
+                <ul>
+                    <li><a href="student-dashboard.html">Student Dashboard</a></li>
+                    <li><a href="create-booking.html">Create Booking</a></li>
+                    <li><a href="my-bookings.html">My Bookings</a></li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h2>Manager Module</h2>
+                <ul>
+                    <li><a href="manager-dashboard.html">Manager Dashboard</a></li>
+                    <li><a href="manage-facilities.html">Manage Facilities (CRUD)</a></li>
+                    <li><a href="manage-equipment.html">Manage Equipment (CRUD)</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>E-Sukan - Campus Facility & Equipment Booking System | Storyboard Prototype</p>
+        </div>
+    </div>
+</body>
+</html>
