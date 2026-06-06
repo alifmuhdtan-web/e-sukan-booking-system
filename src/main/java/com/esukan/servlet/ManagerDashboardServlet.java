@@ -52,7 +52,7 @@ public class ManagerDashboardServlet extends HttpServlet {
         response.getWriter().println("<hr>");
         response.getWriter().println("<h3>Management Tools:</h3>");
         response.getWriter().println("<ul>");
-        response.getWriter().println("<li><a href='#' class='btn'>Manage Facilities</a></li>");
+        response.getWriter().println("<li><a href='" + request.getContextPath() + "/manager/facility' class='btn'>Manage Facilities</a></li>");
         response.getWriter().println("<li><a href='#' class='btn'>Manage Equipment</a></li>");
         response.getWriter().println("<li><a href='#' class='btn'>View Reports</a></li>");
         response.getWriter().println("</ul>");
