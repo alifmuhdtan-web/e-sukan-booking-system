@@ -20,30 +20,30 @@
 </head>
 <body>
 <div class="container">
-    <h2>Sistem Pengurusan Peralatan E-Sukan</h2>
+    <h2>E-Sports Equipment Management System</h2>
     
     <form action="<%= request.getContextPath() %>/manager/equipment" method="post">
-        <h3>Tambah Alatan Baru</h3>
-        <input type="text" name="name" placeholder="Nama Alatan" required>
-        <input type="text" name="type" placeholder="Jenis (Mouse/Keyboard/Monitor)" required>
-        <input type="number" name="quantity" min="1" placeholder="Kuantiti" required>
+        <h3>Add New Equipment</h3>
+        <input type="text" name="name" placeholder="Equipment Name" required>
+        <input type="text" name="type" placeholder="Type (e.g. Mouse/Keyboard/Monitor)" required>
+        <input type="number" name="quantity" min="1" placeholder="Quantity" required>
         <select name="status">
             <option value="Available">Available</option>
             <option value="Maintenance">Maintenance</option>
         </select>
-        <button type="submit">Tambah Peralatan</button>
+        <button type="submit">Add Equipment</button>
     </form>
 
-    <h3>Senarai Alatan</h3>
+    <h3>Equipment List</h3>
     <table>
         <thead>
             <tr>
-                <th>ID</th><th>Nama</th><th>Jenis</th><th>Kuantiti</th><th>Status</th><th>Tindakan</th>
+                <th>ID</th><th>Name</th><th>Type</th><th>Quantity</th><th>Status</th><th>Action</th>
             </tr>
         </thead>
         <tbody>
             <%
-                // Menggunakan kod Java biasa untuk membaca data tanpa JSTL
+                // Using standard Java code to read data without JSTL
                 List<Equipment> equipmentList = (List<Equipment>) request.getAttribute("equipmentList");
                 if (equipmentList != null && !equipmentList.isEmpty()) {
                     for (Equipment eq : equipmentList) {
@@ -55,21 +55,21 @@
                     <td><%= eq.getQuantity() %></td>
                     <td><%= eq.getStatus() %></td>
                     <td>
-                        <a class="btn-delete" href="<%= request.getContextPath() %>/manager/equipment?action=delete&id=<%= eq.getId() %>" onclick="return confirm('Padam peralatan ini?')">Padam</a>
+                        <a class="btn-delete" href="<%= request.getContextPath() %>/manager/equipment?action=delete&id=<%= eq.getId() %>" onclick="return confirm('Delete this equipment?')">Delete</a>
                     </td>
                 </tr>
             <% 
                     }
                 } else {
             %>
-                <tr><td colspan="6" style="text-align:center;">Tiada data peralatan.</td></tr>
+                <tr><td colspan="6" style="text-align:center;">No equipment data found.</td></tr>
             <% 
                 } 
             %>
         </tbody>
     </table>
     <br>
-    <a href="<%= request.getContextPath() %>/storyboard/manager-dashboard.html">← Kembali ke Dashboard</a>
+    <a href="<%= request.getContextPath() %>/storyboard/manager-dashboard.html">← Back to Dashboard</a>
 </div>
 </body>
 </html>
