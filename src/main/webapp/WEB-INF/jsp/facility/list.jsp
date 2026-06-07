@@ -14,102 +14,103 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Facilities - E-Sukan</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
-        .navbar { background: #667eea; padding: 15px 30px; color: white; display: flex; justify-content: space-between; align-items: center; }
-        .navbar a { color: white; text-decoration: none; margin-left: 20px; }
-        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-        h1 { color: #333; margin-bottom: 10px; }
-        .subtitle { color: #666; margin-bottom: 20px; }
-        .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
-        .search-bar input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        .search-bar button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        .filter-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
-        .filter-btn { background: #e2e8f0; padding: 8px 16px; border-radius: 5px; text-decoration: none; color: #333; transition: all 0.3s; }
-        .filter-btn:hover, .filter-btn.active { background: #667eea; color: white; }
-        .facilities-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.3s; }
-        .card:hover { transform: translateY(-5px); }
-        .card-image { background: #667eea; height: 150px; display: flex; align-items: center; justify-content: center; color: white; font-size: 48px; }
-        .card-info { padding: 20px; }
-        .card-info h3 { color: #333; margin-bottom: 10px; }
-        .facility-type { display: inline-block; background: #667eea; color: white; padding: 4px 8px; border-radius: 5px; font-size: 12px; margin-bottom: 10px; }
-        .location, .capacity, .hours, .price { margin: 8px 0; color: #666; font-size: 14px; }
-        .price { font-size: 18px; font-weight: bold; color: #38a169; }
-        .btn { display: inline-block; background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 15px; text-align: center; }
-        .btn:hover { background: #5a67d8; }
-        .btn-outline { background: transparent; border: 2px solid #667eea; color: #667eea; }
-        .btn-outline:hover { background: #667eea; color: white; }
-        .footer { text-align: center; padding: 20px; color: #666; margin-top: 30px; }
-        .empty { text-align: center; padding: 60px; color: #666; background: white; border-radius: 10px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libang Libu - Facilities</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/modern.css">
+    <link rel="icon" type="image/x-icon" href="${pageContext.request.contextPath}/favicon.ico">
 </head>
 <body>
-    <div class="navbar">
-        <div><strong>E-Sukan</strong> - Facilities</div>
-        <div>
-            <a href="${pageContext.request.contextPath}/student/dashboard">Dashboard</a>
-            <a href="${pageContext.request.contextPath}/MyBookingsServlet">My Bookings</a>
-            <a href="${pageContext.request.contextPath}/equipment">Rent Equipment</a>
-            <a href="${pageContext.request.contextPath}/logout">Logout</a>
-        </div>
-    </div>
-    
-    <div class="container">
-        <h1><%= title != null ? title : "Sports Facilities" %></h1>
-        <p class="subtitle">Book your favorite sports facility online</p>
-        
-        <!-- Search Bar -->
-        <div class="search-bar">
-            <form action="${pageContext.request.contextPath}/facilities/search" method="get" style="display: flex; gap: 10px; width: 100%;">
-                <input type="text" name="keyword" placeholder="Search by facility name..." value="<%= keyword != null ? keyword : "" %>">
-                <button type="submit">Search</button>
-            </form>
-        </div>
-        
-        <!-- Filter by Type -->
-        <div class="filter-buttons">
-            <a href="${pageContext.request.contextPath}/facilities" class="filter-btn <%= selectedType == null ? "active" : "" %>">All</a>
-            <% for (Facility.FacilityType type : types) { %>
-                <a href="${pageContext.request.contextPath}/facilities/type?type=<%= type %>" 
-                   class="filter-btn <%= type.toString().equals(selectedType) ? "active" : "" %>">
-                    <%= type %>
-                </a>
-            <% } %>
-        </div>
-        
-        <!-- Facilities Grid -->
-        <div class="facilities-grid">
-            <% if (facilities == null || facilities.isEmpty()) { %>
-                <div class="empty">
-                    <p>No facilities available at the moment.</p>
-                    <a href="${pageContext.request.contextPath}/facilities" class="btn btn-outline" style="margin-top: 20px;">View All Facilities</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="${pageContext.request.contextPath}/assets/logo.png" alt="Libang Libu" class="nav-logo">
+                <div class="nav-brand-text">
+                    <span class="nav-brand-name">Libang Libu</span>
+                    <span class="nav-brand-sub">E-Sukan System</span>
                 </div>
-            <% } else { %>
-                <% for (Facility facility : facilities) { %>
-                    <div class="card">
-                        <div class="card-image">
-                            🏟️
-                        </div>
-                        <div class="card-info">
-                            <span class="facility-type"><%= facility.getFacilityType() %></span>
-                            <h3><%= facility.getFacilityName() %></h3>
-                            <p class="location">📍 <%= facility.getLocation() %></p>
-                            <p class="capacity">👥 Capacity: <%= facility.getCapacity() %> people</p>
-                            <p class="hours">🕐 <%= facility.getOpeningTime() %> - <%= facility.getClosingTime() %></p>
-                            <p class="price">RM <%= facility.getHourlyRate() %> / hour</p>
-                            <a href="${pageContext.request.contextPath}/facility/detail?id=<%= facility.getFacilityId() %>" class="btn">View Details</a>
-                        </div>
+            </div>
+            <div class="nav-menu">
+                <a href="${pageContext.request.contextPath}/student/dashboard" class="nav-link">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/facilities" class="nav-link active">Facilities</a>
+                <a href="${pageContext.request.contextPath}/equipment" class="nav-link">Equipment</a>
+                <div class="user-dropdown">
+                    <button class="user-btn">
+                        <span>User</span> <span><%= user.getUsername() %></span> <span>▼</span>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="${pageContext.request.contextPath}/profile">Profile</a>
+                        <a href="${pageContext.request.contextPath}/my-rentals">My Rentals</a>
+                        <hr>
+                        <a href="${pageContext.request.contextPath}/logout">Logout</a>
                     </div>
-                <% } %>
-            <% } %>
+                </div>
+            </div>
         </div>
-    </div>
+    </nav>
     
-    <div class="footer">
-        <p>E-Sukan - Campus Facility & Equipment Booking System</p>
-    </div>
+    <main class="container">
+        <div class="fade-in-up">
+            <h1><%= title != null ? title : "Sports Facilities" %></h1>
+            <p class="text-secondary" style="margin-bottom: var(--spacing-lg);">Book your favorite sports facility online</p>
+            
+            <!-- Search Bar -->
+            <div class="card" style="margin-bottom: var(--spacing-lg);">
+                <form action="${pageContext.request.contextPath}/facilities/search" method="get" style="display: flex; gap: var(--spacing-sm);">
+                    <input type="text" name="keyword" class="form-input" placeholder="Search by facility name..." value="<%= keyword != null ? keyword : "" %>" style="flex: 1;">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+            </div>
+            
+            <!-- Filter by Type -->
+            <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-sm); margin-bottom: var(--spacing-xl);">
+                <a href="${pageContext.request.contextPath}/facilities" class="btn btn-outline btn-sm <%= selectedType == null ? "btn-primary" : "btn-outline" %>">All</a>
+                <% for (Facility.FacilityType type : types) { %>
+                    <a href="${pageContext.request.contextPath}/facilities/type?type=<%= type %>" 
+                       class="btn btn-outline btn-sm <%= type.toString().equals(selectedType) ? "btn-primary" : "btn-outline" %>">
+                        <%= type %>
+                    </a>
+                <% } %>
+            </div>
+            
+            <!-- Facilities Grid -->
+            <div class="stats-grid">
+                <% if (facilities == null || facilities.isEmpty()) { %>
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <h3>No facilities available</h3>
+                        <p>Check back later for new facilities</p>
+                    </div>
+                <% } else { %>
+                    <% for (Facility facility : facilities) { %>
+                        <div class="stat-card" style="cursor: pointer;" onclick="window.location.href='${pageContext.request.contextPath}/facility/detail?id=<%= facility.getFacilityId() %>'">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-md);">
+                                <span class="badge badge-primary"><%= facility.getFacilityType() %></span>
+                                <span class="badge badge-success">Available</span>
+                            </div>
+                            <h3><%= facility.getFacilityName() %></h3>
+                            <p class="text-secondary" style="margin: var(--spacing-sm) 0;">Location: <%= facility.getLocation() %></p>
+                            <p class="text-secondary">Capacity: <%= facility.getCapacity() %> people</p>
+                            <p class="text-secondary">Hours: <%= facility.getOpeningTime() %> - <%= facility.getClosingTime() %></p>
+                            <div style="margin-top: var(--spacing-md); display: flex; justify-content: space-between; align-items: center;">
+                                <span class="stat-value" style="font-size: 1.5rem;">RM <%= facility.getHourlyRate() %></span>
+                                <span class="text-secondary">/ hour</span>
+                            </div>
+                            <a href="${pageContext.request.contextPath}/facility/detail?id=<%= facility.getFacilityId() %>" class="btn btn-primary btn-sm" style="margin-top: var(--spacing-md); width: 100%;">View Details →</a>
+                        </div>
+                    <% } %>
+                <% } %>
+            </div>
+        </div>
+        
+        <!-- Footer - Copyright 2026 -->
+        <div class="footer">
+            <div class="footer-logo">
+                <img src="${pageContext.request.contextPath}/assets/logo.png" alt="Libang Libu" class="footer-logo-img">
+                <span>Libang Libu - E-Sukan System</span>
+            </div>
+            <p>© 2026 Libang Libu - All Rights Reserved.</p>
+        </div>
+    </main>
+    
+    <script src="${pageContext.request.contextPath}/js/app.js'></script>
 </body>
 </html>

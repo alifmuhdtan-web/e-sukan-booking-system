@@ -32,7 +32,7 @@ public class EquipmentRental {
     
     public EquipmentRental() {}
     
-    
+    // Getters
     public int getRentalId() { return rentalId; }
     public int getUserId() { return userId; }
     public int getEquipmentId() { return equipmentId; }
@@ -52,7 +52,7 @@ public class EquipmentRental {
     public String getUsername() { return username; }
     public BigDecimal getDailyRate() { return dailyRate; }
     
-    
+    // Setters
     public void setRentalId(int rentalId) { this.rentalId = rentalId; }
     public void setUserId(int userId) { this.userId = userId; }
     public void setEquipmentId(int equipmentId) { this.equipmentId = equipmentId; }
@@ -71,10 +71,4 @@ public class EquipmentRental {
     public void setEquipmentName(String equipmentName) { this.equipmentName = equipmentName; }
     public void setUsername(String username) { this.username = username; }
     public void setDailyRate(BigDecimal dailyRate) { this.dailyRate = dailyRate; }
-    
-    public boolean isOverdue() {
-        return rentalStatus == RentalStatus.ACTIVE && 
-               expectedReturnDate != null && 
-               expectedReturnDate.before(new Date(System.currentTimeMillis()));
-    }
 }

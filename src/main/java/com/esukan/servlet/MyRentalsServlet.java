@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-@WebServlet("/my-rentals")
+@WebServlet(name = "MyRentalsServlet", urlPatterns = {"/my-rentals"})
 public class MyRentalsServlet extends HttpServlet {
     private EquipmentDAO equipmentDAO;
     

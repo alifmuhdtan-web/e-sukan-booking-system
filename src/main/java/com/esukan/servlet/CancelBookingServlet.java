@@ -2,6 +2,7 @@ package com.esukan.servlet;
 
 import com.esukan.dao.BookingDAO;
 import java.io.IOException;
+import java.sql.SQLException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -11,13 +12,6 @@ import javax.servlet.http.HttpSession;
 
 @WebServlet(name = "CancelBookingServlet", urlPatterns = {"/CancelBookingServlet"})
 public class CancelBookingServlet extends HttpServlet {
-    
-    private BookingDAO bookingDAO;
-    
-    @Override
-    public void init() {
-        bookingDAO = new BookingDAO();
-    }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -37,7 +31,8 @@ public class CancelBookingServlet extends HttpServlet {
         
         try {
             int bookingId = Integer.parseInt(bookingIdParam);
-            boolean result = bookingDAO.cancelBooking(bookingId);
+            BookingDAO dao = new BookingDAO();
+            boolean result = dao.cancelBooking(bookingId);
             
             if (result) {
                 response.sendRedirect(request.getContextPath() + "/MyBookingsServlet?success=Booking cancelled successfully");
@@ -47,6 +42,9 @@ public class CancelBookingServlet extends HttpServlet {
             
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/MyBookingsServlet?error=Invalid booking ID");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/MyBookingsServlet?error=Database error: " + e.getMessage());
         }
     }
 }

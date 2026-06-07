@@ -2,164 +2,156 @@ package com.esukan.dao;
 
 import com.esukan.model.Booking;
 import com.esukan.util.DatabaseUtil;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class BookingDAO {
-
-    // Create a new booking
-    public boolean createBooking(Booking booking) {
-        boolean status = false;
-        // Exclude created_at and updated_at - they auto-populate
-        String sql = "INSERT INTO bookings (user_id, facility_id, booking_date, start_time, end_time, total_cost, payment_status, booking_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    // SQL Queries
+    private static final String INSERT_SQL = 
+        "INSERT INTO bookings (user_id, facility_id, booking_date, start_time, end_time, " +
+        "total_cost, payment_status, booking_status, special_requests) " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    private static final String SELECT_BY_USER_SQL = 
+        "SELECT b.*, f.facility_name FROM bookings b " +
+        "JOIN facilities f ON b.facility_id = f.facility_id " +
+        "WHERE b.user_id = ? ORDER BY b.booking_date DESC, b.start_time DESC";
+    
+    private static final String SELECT_BY_ID_SQL = 
+        "SELECT b.*, f.facility_name, u.username FROM bookings b " +
+        "JOIN facilities f ON b.facility_id = f.facility_id " +
+        "JOIN users u ON b.user_id = u.user_id " +
+        "WHERE b.booking_id = ?";
+    
+    private static final String CANCEL_SQL = 
+        "UPDATE bookings SET booking_status = 'CANCELLED', cancellation_reason = ?, " +
+        "cancelled_at = CURRENT_TIMESTAMP WHERE booking_id = ? AND user_id = ?";
+    
+    private static final String CHECK_AVAILABILITY_SQL = 
+        "SELECT COUNT(*) FROM bookings WHERE facility_id = ? AND booking_date = ? " +
+        "AND booking_status = 'CONFIRMED' AND ((start_time < ? AND end_time > ?) " +
+        "OR (start_time < ? AND end_time > ?) OR (start_time >= ? AND end_time <= ?))";
+    
+    private static final String GET_BOOKINGS_BY_USER_SQL = 
+        "SELECT b.*, f.facility_name FROM bookings b " +
+        "JOIN facilities f ON b.facility_id = f.facility_id " +
+        "WHERE b.user_id = ? ORDER BY b.booking_date DESC";
+    
+    private static final String COUNT_BY_USER_SQL = 
+        "SELECT COUNT(*) FROM bookings WHERE user_id = ?";
+    
+    private Booking mapResultSetToBooking(ResultSet rs) throws SQLException {
+        Booking booking = new Booking();
+        booking.setBookingId(rs.getInt("booking_id"));
+        booking.setBookingReference(rs.getString("booking_reference"));
+        booking.setUserId(rs.getInt("user_id"));
+        booking.setFacilityId(rs.getInt("facility_id"));
+        booking.setBookingDate(rs.getDate("booking_date"));
+        booking.setStartTime(rs.getTime("start_time"));
+        booking.setEndTime(rs.getTime("end_time"));
+        booking.setDurationHours(rs.getDouble("duration_hours"));
+        booking.setTotalCost(rs.getBigDecimal("total_cost"));
         
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setInt(1, booking.getUserId());
-            ps.setInt(2, booking.getFacilityId());
-            ps.setDate(3, booking.getBookingDate());
-            ps.setTime(4, booking.getStartTime());
-            ps.setTime(5, booking.getEndTime());
-            ps.setDouble(6, booking.getTotalCost());
-            ps.setString(7, "PENDING");
-            ps.setString(8, "CONFIRMED");
-            
-            status = ps.executeUpdate() > 0;
-            
-            if (status) {
-                System.out.println("✓ Booking created successfully for user: " + booking.getUserId());
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("SQL Error creating booking: " + e.getMessage());
-            e.printStackTrace();
+        String paymentStatus = rs.getString("payment_status");
+        if (paymentStatus != null) {
+            booking.setPaymentStatus(Booking.PaymentStatus.valueOf(paymentStatus));
         }
         
-        return status;
-    }
-
-    // Get all bookings for a specific user
-    public List<Booking> getBookingsByUser(int userId) {
-        List<Booking> list = new ArrayList<>();
-        String sql = "SELECT b.booking_id, b.user_id, b.facility_id, f.facility_name, " +
-                     "b.booking_date, b.start_time, b.end_time, b.total_cost, b.booking_status " +
-                     "FROM bookings b " +
-                     "JOIN facilities f ON b.facility_id = f.facility_id " +
-                     "WHERE b.user_id = ? ORDER BY b.booking_date DESC";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
-            
-            while (rs.next()) {
-                Booking b = new Booking();
-                b.setId(rs.getInt("booking_id"));
-                b.setUserId(rs.getInt("user_id"));
-                b.setFacilityId(rs.getInt("facility_id"));
-                b.setFacilityName(rs.getString("facility_name"));
-                b.setBookingDate(rs.getDate("booking_date"));
-                b.setStartTime(rs.getTime("start_time"));
-                b.setEndTime(rs.getTime("end_time"));
-                b.setTotalCost(rs.getDouble("total_cost"));
-                b.setStatus(rs.getString("booking_status"));
-                list.add(b);
-            }
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
+        String bookingStatus = rs.getString("booking_status");
+        if (bookingStatus != null) {
+            booking.setBookingStatus(Booking.BookingStatus.valueOf(bookingStatus));
         }
         
-        return list;
-    }
-
-    // Cancel a booking
-    public boolean cancelBooking(int bookingId) {
-        boolean status = false;
-        String sql = "UPDATE bookings SET booking_status = 'CANCELLED' WHERE booking_id = ?";
+        booking.setSpecialRequests(rs.getString("special_requests"));
+        booking.setCancellationReason(rs.getString("cancellation_reason"));
+        booking.setCancelledAt(rs.getTimestamp("cancelled_at"));
+        booking.setCreatedAt(rs.getTimestamp("created_at"));
+        booking.setUpdatedAt(rs.getTimestamp("updated_at"));
         
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setInt(1, bookingId);
-            status = ps.executeUpdate() > 0;
-            
-            if (status) {
-                System.out.println("✓ Booking cancelled successfully: " + bookingId);
-            }
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        try { booking.setFacilityName(rs.getString("facility_name")); } catch (Exception e) {}
+        try { booking.setUserName(rs.getString("username")); } catch (Exception e) {}
         
-        return status;
+        return booking;
     }
     
-    // Check if a time slot is available
-    public boolean checkAvailability(int facilityId, Date bookingDate, Time startTime, Time endTime) {
-        String sql = "SELECT COUNT(*) FROM bookings WHERE facility_id = ? AND booking_date = ? " +
-                     "AND booking_status = 'CONFIRMED' AND ((start_time < ? AND end_time > ?) " +
-                     "OR (start_time < ? AND end_time > ?) OR (start_time >= ? AND end_time <= ?))";
-        
+    // Create booking
+    public boolean createBooking(Booking booking) throws SQLException {
+        String generatedColumns[] = {"booking_id"};
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(INSERT_SQL, generatedColumns)) {
             
-            ps.setInt(1, facilityId);
-            ps.setDate(2, bookingDate);
-            ps.setTime(3, endTime);
-            ps.setTime(4, startTime);
-            ps.setTime(5, startTime);
-            ps.setTime(6, endTime);
-            ps.setTime(7, startTime);
-            ps.setTime(8, endTime);
+            pstmt.setInt(1, booking.getUserId());
+            pstmt.setInt(2, booking.getFacilityId());
+            pstmt.setDate(3, booking.getBookingDate());
+            pstmt.setTime(4, booking.getStartTime());
+            pstmt.setTime(5, booking.getEndTime());
+            pstmt.setBigDecimal(6, booking.getTotalCost());
+            pstmt.setString(7, booking.getPaymentStatus().toString());
+            pstmt.setString(8, booking.getBookingStatus().toString());
+            pstmt.setString(9, booking.getSpecialRequests());
             
-            ResultSet rs = ps.executeQuery();
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+    
+    // Get bookings by user ID
+    public List<Booking> getBookingsByUser(int userId) throws SQLException {
+        List<Booking> bookings = new ArrayList<>();
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(GET_BOOKINGS_BY_USER_SQL)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                bookings.add(mapResultSetToBooking(rs));
+            }
+        }
+        return bookings;
+    }
+    
+    // Cancel booking
+    public boolean cancelBooking(int bookingId) throws SQLException {
+        String sql = "UPDATE bookings SET booking_status = 'CANCELLED', cancelled_at = CURRENT_TIMESTAMP WHERE booking_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, bookingId);
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+    
+    // Count bookings by user
+    public int countByUser(int userId) throws SQLException {
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(COUNT_BY_USER_SQL)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+    
+    // Check availability
+    public boolean checkAvailability(int facilityId, Date bookingDate, Time startTime, Time endTime) throws SQLException {
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(CHECK_AVAILABILITY_SQL)) {
+            pstmt.setInt(1, facilityId);
+            pstmt.setDate(2, bookingDate);
+            pstmt.setTime(3, endTime);
+            pstmt.setTime(4, startTime);
+            pstmt.setTime(5, startTime);
+            pstmt.setTime(6, endTime);
+            pstmt.setTime(7, startTime);
+            pstmt.setTime(8, endTime);
+            ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1) == 0;
             }
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
+            return true;
         }
-        
-        return true;
-    }
-    
-    // Get a single booking by ID
-    public Booking getBookingById(int bookingId) {
-        Booking booking = null;
-        String sql = "SELECT b.booking_id, b.user_id, b.facility_id, f.facility_name, " +
-                     "b.booking_date, b.start_time, b.end_time, b.total_cost, b.booking_status " +
-                     "FROM bookings b " +
-                     "JOIN facilities f ON b.facility_id = f.facility_id " +
-                     "WHERE b.booking_id = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setInt(1, bookingId);
-            ResultSet rs = ps.executeQuery();
-            
-            if (rs.next()) {
-                booking = new Booking();
-                booking.setId(rs.getInt("booking_id"));
-                booking.setUserId(rs.getInt("user_id"));
-                booking.setFacilityId(rs.getInt("facility_id"));
-                booking.setFacilityName(rs.getString("facility_name"));
-                booking.setBookingDate(rs.getDate("booking_date"));
-                booking.setStartTime(rs.getTime("start_time"));
-                booking.setEndTime(rs.getTime("end_time"));
-                booking.setTotalCost(rs.getDouble("total_cost"));
-                booking.setStatus(rs.getString("booking_status"));
-            }
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        
-        return booking;
     }
 }

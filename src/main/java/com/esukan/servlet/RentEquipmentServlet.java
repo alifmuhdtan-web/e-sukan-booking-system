@@ -7,7 +7,6 @@ import com.esukan.model.User;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -19,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-@WebServlet("/equipment/rent")
+@WebServlet(name = "RentEquipmentServlet", urlPatterns = {"/equipment/rent"})
 public class RentEquipmentServlet extends HttpServlet {
     private EquipmentDAO equipmentDAO;
     
@@ -42,18 +41,20 @@ public class RentEquipmentServlet extends HttpServlet {
         if (equipmentIdParam != null && !equipmentIdParam.isEmpty()) {
             try {
                 int equipmentId = Integer.parseInt(equipmentIdParam);
-                Optional<Equipment> equipment = equipmentDAO.findById(equipmentId);
+                Optional<Equipment> equipment = equipmentDAO.getEquipmentById(equipmentId);
                 if (equipment.isPresent()) {
                     request.setAttribute("equipment", equipment.get());
-                    request.getRequestDispatcher("/WEB-INF/jsp/equipment/rent.jsp")
-                           .forward(request, response);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/equipment?error=Equipment not found");
                     return;
                 }
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 throw new ServletException(e);
             }
         }
-        response.sendRedirect(request.getContextPath() + "/equipment?error=Equipment not found");
+        
+        request.getRequestDispatcher("/WEB-INF/jsp/equipment/rent.jsp")
+               .forward(request, response);
     }
     
     @Override
@@ -84,7 +85,7 @@ public class RentEquipmentServlet extends HttpServlet {
                 return;
             }
             
-            Optional<Equipment> equipmentOpt = equipmentDAO.findById(equipmentId);
+            Optional<Equipment> equipmentOpt = equipmentDAO.getEquipmentById(equipmentId);
             if (!equipmentOpt.isPresent()) {
                 response.sendRedirect(request.getContextPath() + "/equipment?error=Equipment not found");
                 return;

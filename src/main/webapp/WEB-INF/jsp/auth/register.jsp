@@ -3,134 +3,108 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Register - E-Sukan Booking System</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-        .register-container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 40px;
-        }
-        h2 { text-align: center; color: #333; margin-bottom: 30px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #555; font-weight: 500; }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        input:focus, select:focus { outline: none; border-color: #667eea; }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #667eea;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover { background: #5a67d8; }
-        .error-message {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .login-link { text-align: center; margin-top: 20px; color: #666; }
-        .login-link a { color: #667eea; text-decoration: none; }
-        .row { display: flex; gap: 15px; }
-        .row .form-group { flex: 1; }
-        small { color: #666; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libang Libu - Register E-Sukan</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/modern.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="${pageContext.request.contextPath}/favicon.ico">
 </head>
 <body>
-    <div class="register-container">
-        <h2>Create Account</h2>
-        
-        <% if (request.getAttribute("errors") != null) { %>
-            <div class="error-message">
-                <%= request.getAttribute("errors") %>
-            </div>
-        <% } %>
-        
-        <form action="${pageContext.request.contextPath}/register" method="post">
-            <div class="form-group">
-                <label>Username *</label>
-                <input type="text" name="username" 
-                       value="<%= request.getAttribute("username") != null ? request.getAttribute("username") : "" %>"
-                       required>
-                <small>At least 3 characters</small>
+    <div class="container" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+        <div class="card" style="max-width: 500px; width: 100%; animation: fadeInUp 0.4s ease;">
+            
+            <!-- Logo - Fixed Size (80x80) -->
+            <div style="text-align: center; margin-bottom: var(--spacing-xl);">
+                <img src="${pageContext.request.contextPath}/assets/logo.png" alt="Libang Libu" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: var(--spacing-md);">
+                <h1 class="h2" style="margin-bottom: var(--spacing-xs);">Create Account</h1>
+                <p class="text-secondary" style="font-size: 0.875rem;">Join Libang Libu E-Sukan</p>
             </div>
             
-            <div class="form-group">
-                <label>Email *</label>
-                <input type="email" name="email" 
-                       value="<%= request.getAttribute("email") != null ? request.getAttribute("email") : "" %>"
-                       required>
-            </div>
-            
-            <div class="row">
-                <div class="form-group">
-                    <label>Password *</label>
-                    <input type="password" name="password" required>
-                    <small>At least 6 characters</small>
+            <% if (request.getAttribute("errors") != null) { %>
+                <div class="toast toast-error" style="margin-bottom: var(--spacing-lg); animation: none;">
+                    <span class="toast-message"><%= request.getAttribute("errors") %></span>
                 </div>
+            <% } %>
+            
+            <form action="${pageContext.request.contextPath}/register" method="post">
                 <div class="form-group">
-                    <label>Confirm Password *</label>
-                    <input type="password" name="confirmPassword" required>
+                    <label class="form-label"><i class="fas fa-user"></i> Username <span class="required">*</span></label>
+                    <input type="text" name="username" class="form-input" 
+                           value="<%= request.getAttribute("username") != null ? request.getAttribute("username") : "" %>" 
+                           placeholder="Enter username" required>
+                    <div class="form-hint">At least 3 characters</div>
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Full Name *</label>
-                <input type="text" name="fullName" 
-                       value="<%= request.getAttribute("fullName") != null ? request.getAttribute("fullName") : "" %>"
-                       required>
-            </div>
-            
-            <div class="row">
+                
                 <div class="form-group">
-                    <label>Phone Number *</label>
-                    <input type="tel" name="phoneNumber" 
-                           value="<%= request.getAttribute("phoneNumber") != null ? request.getAttribute("phoneNumber") : "" %>"
-                           placeholder="0123456789" required>
+                    <label class="form-label"><i class="fas fa-envelope"></i> Email <span class="required">*</span></label>
+                    <input type="email" name="email" class="form-input" 
+                           value="<%= request.getAttribute("email") != null ? request.getAttribute("email") : "" %>" 
+                           placeholder="your@email.com" required>
                 </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-lock"></i> Password <span class="required">*</span></label>
+                        <input type="password" name="password" class="form-input" placeholder="Enter password" required>
+                        <div class="form-hint">Minimum 6 characters</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-check-circle"></i> Confirm Password <span class="required">*</span></label>
+                        <input type="password" name="confirmPassword" class="form-input" placeholder="Confirm password" required>
+                    </div>
+                </div>
+                
                 <div class="form-group">
-                    <label>Matric Number (Students)</label>
-                    <input type="text" name="matricNumber" 
-                           value="<%= request.getAttribute("matricNumber") != null ? request.getAttribute("matricNumber") : "" %>">
+                    <label class="form-label"><i class="fas fa-signature"></i> Full Name <span class="required">*</span></label>
+                    <input type="text" name="fullName" class="form-input" 
+                           value="<%= request.getAttribute("fullName") != null ? request.getAttribute("fullName") : "" %>" 
+                           placeholder="Your full name" required>
                 </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-phone"></i> Phone Number <span class="required">*</span></label>
+                        <input type="tel" name="phoneNumber" class="form-input" 
+                               value="<%= request.getAttribute("phoneNumber") != null ? request.getAttribute("phoneNumber") : "" %>" 
+                               placeholder="0123456789" required>
+                        <div class="form-hint">10-11 digits</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-id-card"></i> Matric Number</label>
+                        <input type="text" name="matricNumber" class="form-input" 
+                               value="<%= request.getAttribute("matricNumber") != null ? request.getAttribute("matricNumber") : "" %>" 
+                               placeholder="e.g., A123456">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-tag"></i> Account Type</label>
+                    <select name="userRole" class="form-select">
+                        <option value="STUDENT">Student</option>
+                        <option value="MANAGER">Facility Manager</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fas fa-user-plus"></i> Create Account</button>
+            </form>
+            
+            <div style="text-align: center; margin-top: var(--spacing-lg);">
+                <p class="text-secondary" style="font-size: 0.875rem;">
+                    Already have an account? 
+                    <a href="${pageContext.request.contextPath}/login"><i class="fas fa-sign-in-alt"></i> Sign in</a>
+                </p>
             </div>
             
-            <div class="form-group">
-                <label>Account Type</label>
-                <select name="userRole">
-                    <option value="STUDENT">Student</option>
-                    <option value="MANAGER">Facility Manager</option>
-                </select>
+            <div class="footer" style="margin-top: var(--spacing-xl);">
+                <div class="footer-logo">
+                    <img src="${pageContext.request.contextPath}/assets/logo.png" alt="Libang Libu" class="footer-logo-img">
+                    <span>Libang Libu - E-Sukan System</span>
+                </div>
+                <p>© 2026 Libang Libu - All Rights Reserved.</p>
             </div>
-            
-            <button type="submit">Register</button>
-        </form>
-        
-        <div class="login-link">
-            Already have an account? <a href="${pageContext.request.contextPath}/login">Login here</a>
         </div>
     </div>
+    
+    <script src="${pageContext.request.contextPath}/js/app.js"></script>
 </body>
 </html>

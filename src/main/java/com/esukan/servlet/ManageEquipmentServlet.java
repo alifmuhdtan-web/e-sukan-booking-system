@@ -5,7 +5,6 @@ import com.esukan.model.Equipment;
 import com.esukan.model.User;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -53,11 +52,11 @@ public class ManageEquipmentServlet extends HttpServlet {
         }
         
         try {
-            List<Equipment> equipmentList = equipmentDAO.findAll();
+            List<Equipment> equipmentList = equipmentDAO.getAllEquipment();
             request.setAttribute("equipmentList", equipmentList);
             request.getRequestDispatcher("/WEB-INF/jsp/equipment/manage.jsp")
                    .forward(request, response);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new ServletException(e);
         }
     }
@@ -82,7 +81,6 @@ public class ManageEquipmentServlet extends HttpServlet {
             Equipment eq = new Equipment();
             eq.setEquipmentName(request.getParameter("name"));
             eq.setEquipmentType(Equipment.EquipmentType.valueOf(request.getParameter("type").toUpperCase()));
-            eq.setDescription(request.getParameter("description"));
             int quantity = Integer.parseInt(request.getParameter("quantity"));
             eq.setQuantityTotal(quantity);
             eq.setQuantityAvailable(quantity);

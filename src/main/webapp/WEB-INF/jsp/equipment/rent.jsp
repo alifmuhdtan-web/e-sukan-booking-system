@@ -1,65 +1,119 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.esukan.model.Equipment" %>
+<%@ page import="com.esukan.model.User" %>
 <%
+    User user = (User) session.getAttribute("user");
     Equipment equipment = (Equipment) request.getAttribute("equipment");
     String error = request.getParameter("error");
 %>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Rent Equipment - E-Sukan</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
-        .navbar { background: #667eea; padding: 15px 30px; color: white; display: flex; justify-content: space-between; }
-        .navbar a { color: white; text-decoration: none; margin-left: 20px; }
-        .container { max-width: 500px; margin: 50px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h1 { color: #333; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
-        button { background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
-        .error { color: red; background: #ffe0e0; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
-        .info { background: #e6f7ff; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libang Libu - Rent Equipment</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/modern.css">
+    <link rel="icon" type="image/x-icon" href="${pageContext.request.contextPath}/favicon.ico">
+    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/logo.png">
 </head>
 <body>
-    <div class="navbar">
-        <div><strong>E-Sukan</strong> - Rent Equipment</div>
-        <div><a href="${pageContext.request.contextPath}/equipment">Back</a><a href="${pageContext.request.contextPath}/logout">Logout</a></div>
-    </div>
-    <div class="container">
-        <h1>Rent Equipment</h1>
-        <% if (error != null) { %>
-            <div class="error"><%= error %></div>
-        <% } %>
-        <% if (equipment != null) { %>
-            <div class="info">
-                <strong><%= equipment.getEquipmentName() %></strong><br>
-                Daily Rate: RM <%= equipment.getDailyRate() %><br>
-                Deposit: RM <%= equipment.getDepositAmount() %><br>
-                Available: <%= equipment.getQuantityAvailable() %> units
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="${pageContext.request.contextPath}/assets/logo.png" alt="Libang Libu" class="nav-logo">
+                <div class="nav-brand-text">
+                    <span class="nav-brand-name">Libang Libu</span>
+                    <span class="nav-brand-sub">E-Sukan System</span>
+                </div>
             </div>
-            <form action="${pageContext.request.contextPath}/equipment/rent" method="post">
-                <input type="hidden" name="equipmentId" value="<%= equipment.getEquipmentId() %>">
-                <div class="form-group">
-                    <label>Quantity:</label>
-                    <input type="number" name="quantity" min="1" max="<%= equipment.getQuantityAvailable() %>" value="1" required>
+            <div class="nav-menu">
+                <a href="${pageContext.request.contextPath}/student/dashboard" class="nav-link">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/equipment" class="nav-link">Equipment</a>
+                <div class="user-dropdown">
+                    <button class="user-btn">👤 <span><%= user.getUsername() %></span> ▼</button>
+                    <div class="dropdown-menu">
+                        <a href="${pageContext.request.contextPath}/profile">Profile</a>
+                        <a href="${pageContext.request.contextPath}/my-rentals">My Rentals</a>
+                        <hr>
+                        <a href="${pageContext.request.contextPath}/logout">Logout</a>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Expected Return Date:</label>
-                    <input type="date" name="expectedReturnDate" required>
-                </div>
-                <div class="form-group">
-                    <label>Condition on Rental:</label>
-                    <select name="conditionOnRental">
-                        <option>Excellent</option><option>Good</option><option>Fair</option>
-                    </select>
-                </div>
-                <button type="submit">Confirm Rental</button>
-            </form>
-        <% } else { %>
-            <p>Equipment not found.</p>
-        <% } %>
-    </div>
+            </div>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="fade-in-up">
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <h1>Rent Equipment</h1>
+                
+                <% if (error != null) { %>
+                    <div class="toast toast-error" style="margin-bottom: var(--spacing-lg); animation: none;">
+                        <span class="toast-icon">✗</span>
+                        <span class="toast-message"><%= error %></span>
+                    </div>
+                <% } %>
+                
+                <% if (equipment != null) { %>
+                    <div class="card" style="background: var(--surface-hover); margin-bottom: var(--spacing-lg);">
+                        <h3><%= equipment.getEquipmentName() %></h3>
+                        <p>Daily Rate: <strong>RM <%= equipment.getDailyRate() %></strong></p>
+                        <p>Deposit: RM <%= equipment.getDepositAmount() %></p>
+                        <p>Available: <%= equipment.getQuantityAvailable() %> units</p>
+                        <p>Condition: <span class="badge badge-info"><%= equipment.getConditionStatus() %></span></p>
+                    </div>
+                    
+                    <form action="${pageContext.request.contextPath}/equipment/rent" method="post">
+                        <input type="hidden" name="equipmentId" value="<%= equipment.getEquipmentId() %>">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Quantity:</label>
+                            <input type="number" name="quantity" class="form-input" min="1" max="<%= equipment.getQuantityAvailable() %>" value="1" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Expected Return Date:</label>
+                            <input type="date" name="expectedReturnDate" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Condition on Rental:</label>
+                            <select name="conditionOnRental" class="form-select">
+                                <option value="Excellent">Excellent</option>
+                                <option value="Good">Good</option>
+                                <option value="Fair">Fair</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Notes (Optional):</label>
+                            <textarea name="notes" class="form-textarea" rows="3"></textarea>
+                        </div>
+                        
+                        <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg);">
+                            <button type="submit" class="btn btn-primary">Confirm Rental</button>
+                            <a href="${pageContext.request.contextPath}/equipment" class="btn btn-outline">Cancel</a>
+                        </div>
+                    </form>
+                <% } else { %>
+                    <div class="empty-state">
+                        <div class="empty-icon">🏸</div>
+                        <h3>Equipment not found</h3>
+                        <a href="${pageContext.request.contextPath}/equipment" class="btn btn-primary">Browse Equipment</a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-logo">
+                <img src="${pageContext.request.contextPath}/assets/logo.png" alt="Libang Libu" class="footer-logo-img">
+                <span>Libang Libu - E-Sukan System</span>
+            </div>
+            <p>© 2024 Libang Libu - All Rights Reserved.</p>
+        </div>
+    </main>
+    
+    <script src="${pageContext.request.contextPath}/js/app.js"></script>
 </body>
 </html>

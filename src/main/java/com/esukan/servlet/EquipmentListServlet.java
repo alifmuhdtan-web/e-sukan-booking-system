@@ -12,28 +12,32 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-@WebServlet("/equipment")
+@WebServlet(name = "EquipmentListServlet", urlPatterns = {"/equipment"})
 public class EquipmentListServlet extends HttpServlet {
+    private EquipmentDAO equipmentDAO;
     
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    public void init() {
+        equipmentDAO = new EquipmentDAO();
+    }
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        HttpSession session = req.getSession(false);
+        HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
         
         try {
-            EquipmentDAO dao = new EquipmentDAO();
-            List<Equipment> equipmentList = dao.findAllAvailable();
-            req.setAttribute("equipmentList", equipmentList);
-            req.getRequestDispatcher("/WEB-INF/jsp/equipment/list.jsp")
-               .forward(req, resp);
+            List<Equipment> equipmentList = equipmentDAO.findAllAvailable();
+            request.setAttribute("equipmentList", equipmentList);
+            request.getRequestDispatcher("/WEB-INF/jsp/equipment/list.jsp")
+                   .forward(request, response);
         } catch (SQLException e) {
-            resp.getWriter().println("Database error: " + e.getMessage());
-            e.printStackTrace();
+            throw new ServletException(e);
         }
     }
 }

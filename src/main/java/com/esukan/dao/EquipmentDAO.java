@@ -11,70 +11,49 @@ import java.util.Optional;
 
 public class EquipmentDAO {
     
-    
+    // ==================== Equipment Queries ====================
     
     private static final String INSERT_EQUIPMENT_SQL = 
-        "INSERT INTO equipment (equipment_name, equipment_type, facility_id, description, " +
-        "quantity_total, quantity_available, daily_rate, deposit_amount, condition_status) " +
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO equipment (equipment_name, equipment_type, quantity_total, quantity_available, daily_rate, deposit_amount, condition_status, is_active) " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     
     private static final String SELECT_ALL_EQUIPMENT_SQL = 
-        "SELECT e.*, f.facility_name FROM equipment e " +
-        "LEFT JOIN facilities f ON e.facility_id = f.facility_id " +
-        "WHERE e.is_active = true ORDER BY e.equipment_name";
+        "SELECT * FROM equipment WHERE is_active = true ORDER BY equipment_name";
     
     private static final String SELECT_AVAILABLE_EQUIPMENT_SQL = 
-        "SELECT e.*, f.facility_name FROM equipment e " +
-        "LEFT JOIN facilities f ON e.facility_id = f.facility_id " +
-        "WHERE e.is_active = true AND e.quantity_available > 0 ORDER BY e.equipment_name";
+        "SELECT * FROM equipment WHERE is_active = true AND quantity_available > 0 ORDER BY equipment_name";
     
     private static final String SELECT_EQUIPMENT_BY_ID_SQL = 
-        "SELECT e.*, f.facility_name FROM equipment e " +
-        "LEFT JOIN facilities f ON e.facility_id = f.facility_id " +
-        "WHERE e.equipment_id = ?";
+        "SELECT * FROM equipment WHERE equipment_id = ? AND is_active = true";
     
     private static final String UPDATE_EQUIPMENT_SQL = 
-        "UPDATE equipment SET equipment_name=?, equipment_type=?, facility_id=?, description=?, " +
-        "quantity_total=?, quantity_available=?, daily_rate=?, deposit_amount=?, condition_status=? " +
-        "WHERE equipment_id = ?";
+        "UPDATE equipment SET equipment_name=?, equipment_type=?, quantity_total=?, quantity_available=?, daily_rate=?, deposit_amount=?, condition_status=?, is_active=? WHERE equipment_id = ?";
     
     private static final String DELETE_EQUIPMENT_SQL = 
         "UPDATE equipment SET is_active = false WHERE equipment_id = ?";
     
-    
+    // ==================== Rental Queries ====================
     
     private static final String INSERT_RENTAL_SQL = 
-        "INSERT INTO equipment_rental (user_id, equipment_id, quantity_rented, rental_date, " +
-        "expected_return_date, total_amount, deposit_paid, rental_status, condition_on_rental) " +
+        "INSERT INTO equipment_rental (user_id, equipment_id, quantity_rented, rental_date, expected_return_date, total_amount, deposit_paid, rental_status, condition_on_rental) " +
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     private static final String SELECT_RENTALS_BY_USER_SQL = 
-        "SELECT r.*, e.equipment_name, e.daily_rate, u.username " +
-        "FROM equipment_rental r " +
+        "SELECT r.*, e.equipment_name, e.daily_rate FROM equipment_rental r " +
         "JOIN equipment e ON r.equipment_id = e.equipment_id " +
-        "JOIN users u ON r.user_id = u.user_id " +
         "WHERE r.user_id = ? ORDER BY r.rental_date DESC";
-    
-    private static final String RETURN_EQUIPMENT_SQL = 
-        "UPDATE equipment_rental SET actual_return_date = ?, condition_on_return = ?, " +
-        "rental_status = 'RETURNED' WHERE rental_id = ? AND user_id = ?";
-    
-    
     
     private Equipment mapEquipment(ResultSet rs) throws SQLException {
         Equipment e = new Equipment();
         e.setEquipmentId(rs.getInt("equipment_id"));
         e.setEquipmentName(rs.getString("equipment_name"));
         e.setEquipmentType(Equipment.EquipmentType.valueOf(rs.getString("equipment_type")));
-        e.setFacilityId(rs.getInt("facility_id"));
-        e.setDescription(rs.getString("description"));
         e.setQuantityTotal(rs.getInt("quantity_total"));
         e.setQuantityAvailable(rs.getInt("quantity_available"));
         e.setDailyRate(rs.getBigDecimal("daily_rate"));
         e.setDepositAmount(rs.getBigDecimal("deposit_amount"));
         e.setConditionStatus(Equipment.ConditionStatus.valueOf(rs.getString("condition_status")));
         e.setActive(rs.getBoolean("is_active"));
-        try { e.setFacilityName(rs.getString("facility_name")); } catch(Exception ex) {}
         return e;
     }
     
@@ -94,15 +73,14 @@ public class EquipmentDAO {
         r.setConditionOnRental(rs.getString("condition_on_rental"));
         r.setConditionOnReturn(rs.getString("condition_on_return"));
         r.setNotes(rs.getString("notes"));
-        try { r.setEquipmentName(rs.getString("equipment_name")); } catch(Exception ex) {}
-        try { r.setUsername(rs.getString("username")); } catch(Exception ex) {}
-        try { r.setDailyRate(rs.getBigDecimal("daily_rate")); } catch(Exception ex) {}
+        try { r.setEquipmentName(rs.getString("equipment_name")); } catch(Exception e) {}
+        try { r.setDailyRate(rs.getBigDecimal("daily_rate")); } catch(Exception e) {}
         return r;
     }
     
+    // ==================== Equipment CRUD ====================
     
-    
-    public List<Equipment> findAll() throws SQLException {
+    public List<Equipment> getAllEquipment() throws SQLException {
         List<Equipment> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
              Statement stmt = conn.createStatement();
@@ -122,7 +100,7 @@ public class EquipmentDAO {
         return list;
     }
     
-    public Optional<Equipment> findById(int id) throws SQLException {
+    public Optional<Equipment> getEquipmentById(int id) throws SQLException {
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(SELECT_EQUIPMENT_BY_ID_SQL)) {
             ps.setInt(1, id);
@@ -132,58 +110,54 @@ public class EquipmentDAO {
         return Optional.empty();
     }
     
-    public Equipment createEquipment(Equipment e) throws SQLException {
-        String[] generated = {"equipment_id"};
+    public void addEquipment(Equipment e) throws SQLException {
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(INSERT_EQUIPMENT_SQL, generated)) {
+             PreparedStatement ps = conn.prepareStatement(INSERT_EQUIPMENT_SQL)) {
             ps.setString(1, e.getEquipmentName());
             ps.setString(2, e.getEquipmentType().toString());
-            ps.setObject(3, e.getFacilityId() > 0 ? e.getFacilityId() : null);
-            ps.setString(4, e.getDescription());
-            ps.setInt(5, e.getQuantityTotal());
-            ps.setInt(6, e.getQuantityAvailable());
-            ps.setBigDecimal(7, e.getDailyRate());
-            ps.setBigDecimal(8, e.getDepositAmount());
-            ps.setString(9, e.getConditionStatus().toString());
+            ps.setInt(3, e.getQuantityTotal());
+            ps.setInt(4, e.getQuantityAvailable());
+            ps.setBigDecimal(5, e.getDailyRate());
+            ps.setBigDecimal(6, e.getDepositAmount());
+            ps.setString(7, e.getConditionStatus().toString());
+            ps.setBoolean(8, true);
             ps.executeUpdate();
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) e.setEquipmentId(rs.getInt(1));
-            }
         }
-        return e;
     }
     
-    public boolean updateEquipment(Equipment e) throws SQLException {
+    public void createEquipment(Equipment e) throws SQLException {
+        addEquipment(e);
+    }
+    
+    public void updateEquipment(Equipment e) throws SQLException {
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(UPDATE_EQUIPMENT_SQL)) {
             ps.setString(1, e.getEquipmentName());
             ps.setString(2, e.getEquipmentType().toString());
-            ps.setObject(3, e.getFacilityId() > 0 ? e.getFacilityId() : null);
-            ps.setString(4, e.getDescription());
-            ps.setInt(5, e.getQuantityTotal());
-            ps.setInt(6, e.getQuantityAvailable());
-            ps.setBigDecimal(7, e.getDailyRate());
-            ps.setBigDecimal(8, e.getDepositAmount());
-            ps.setString(9, e.getConditionStatus().toString());
-            ps.setInt(10, e.getEquipmentId());
-            return ps.executeUpdate() > 0;
+            ps.setInt(3, e.getQuantityTotal());
+            ps.setInt(4, e.getQuantityAvailable());
+            ps.setBigDecimal(5, e.getDailyRate());
+            ps.setBigDecimal(6, e.getDepositAmount());
+            ps.setString(7, e.getConditionStatus().toString());
+            ps.setBoolean(8, e.isActive());
+            ps.setInt(9, e.getEquipmentId());
+            ps.executeUpdate();
         }
     }
     
-    public boolean deleteEquipment(int id) throws SQLException {
+    public void deleteEquipment(int id) throws SQLException {
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(DELETE_EQUIPMENT_SQL)) {
             ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
+            ps.executeUpdate();
         }
     }
     
+    // ==================== Rental CRUD ====================
     
-    
-    public EquipmentRental createRental(EquipmentRental rental) throws SQLException {
-        String[] generated = {"rental_id"};
+    public void createRental(EquipmentRental rental) throws SQLException {
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(INSERT_RENTAL_SQL, generated)) {
+             PreparedStatement ps = conn.prepareStatement(INSERT_RENTAL_SQL)) {
             ps.setInt(1, rental.getUserId());
             ps.setInt(2, rental.getEquipmentId());
             ps.setInt(3, rental.getQuantityRented());
@@ -194,11 +168,7 @@ public class EquipmentDAO {
             ps.setString(8, rental.getRentalStatus().toString());
             ps.setString(9, rental.getConditionOnRental());
             ps.executeUpdate();
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) rental.setRentalId(rs.getInt(1));
-            }
         }
-        return rental;
     }
     
     public List<EquipmentRental> findRentalsByUser(int userId) throws SQLException {
@@ -210,16 +180,5 @@ public class EquipmentDAO {
             while (rs.next()) list.add(mapRental(rs));
         }
         return list;
-    }
-    
-    public boolean returnEquipment(int rentalId, int userId, String conditionOnReturn) throws SQLException {
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(RETURN_EQUIPMENT_SQL)) {
-            ps.setDate(1, new Date(System.currentTimeMillis()));
-            ps.setString(2, conditionOnReturn);
-            ps.setInt(3, rentalId);
-            ps.setInt(4, userId);
-            return ps.executeUpdate() > 0;
-        }
     }
 }

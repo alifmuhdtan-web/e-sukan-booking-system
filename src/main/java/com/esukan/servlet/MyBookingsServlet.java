@@ -3,6 +3,7 @@ package com.esukan.servlet;
 import com.esukan.dao.BookingDAO;
 import com.esukan.model.Booking;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -14,13 +15,6 @@ import javax.servlet.http.HttpSession;
 
 @WebServlet(name = "MyBookingsServlet", urlPatterns = {"/MyBookingsServlet"})
 public class MyBookingsServlet extends HttpServlet {
-    
-    private BookingDAO bookingDAO;
-    
-    @Override
-    public void init() {
-        bookingDAO = new BookingDAO();
-    }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -34,15 +28,24 @@ public class MyBookingsServlet extends HttpServlet {
         
         int userId = (int) session.getAttribute("userId");
         
-        List<Booking> bookingList = bookingDAO.getBookingsByUser(userId);
-        request.setAttribute("bookingList", bookingList);
+        BookingDAO dao = new BookingDAO();
         
-        // Add success/error messages if present
-        if (request.getParameter("success") != null) {
-            request.setAttribute("success", request.getParameter("success"));
+        try {
+            List<Booking> bookingList = dao.getBookingsByUser(userId);
+            request.setAttribute("bookingList", bookingList);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Database error: " + e.getMessage());
         }
-        if (request.getParameter("error") != null) {
-            request.setAttribute("error", request.getParameter("error"));
+        
+        String success = request.getParameter("success");
+        if (success != null) {
+            request.setAttribute("success", success);
+        }
+        
+        String error = request.getParameter("error");
+        if (error != null) {
+            request.setAttribute("error", error);
         }
         
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/booking/list.jsp");

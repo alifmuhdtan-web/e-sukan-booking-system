@@ -1,6 +1,5 @@
 package com.esukan.servlet;
 
-import com.esukan.dao.BookingDAO;
 import com.esukan.model.User;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -10,14 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-@WebServlet(name = "StudentDashboardServlet", urlPatterns = {"/student/dashboard"})
-public class StudentDashboardServlet extends HttpServlet {
-    private BookingDAO bookingDAO;
-    
-    @Override
-    public void init() {
-        bookingDAO = new BookingDAO();
-    }
+@WebServlet("/profile")
+public class ProfileServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -30,13 +23,6 @@ public class StudentDashboardServlet extends HttpServlet {
         }
         
         User user = (User) session.getAttribute("user");
-        int totalBookings = 0;
-        
-        try {
-            totalBookings = bookingDAO.countByUser(user.getUserId());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         
         response.setContentType("text/html");
         response.getWriter().println("<!DOCTYPE html>");
@@ -44,7 +30,7 @@ public class StudentDashboardServlet extends HttpServlet {
         response.getWriter().println("<head>");
         response.getWriter().println("<meta charset='UTF-8'>");
         response.getWriter().println("<meta name='viewport' content='width=device-width, initial-scale=1.0'>");
-        response.getWriter().println("<title>Libang Libu - Student Dashboard</title>");
+        response.getWriter().println("<title>Libang Libu - My Profile</title>");
         response.getWriter().println("<link rel='stylesheet' href='" + request.getContextPath() + "/css/modern.css'>");
         response.getWriter().println("<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>");
         response.getWriter().println("<link rel='icon' type='image/x-icon' href='" + request.getContextPath() + "/favicon.ico'>");
@@ -62,16 +48,23 @@ public class StudentDashboardServlet extends HttpServlet {
         response.getWriter().println("</div>");
         response.getWriter().println("</div>");
         response.getWriter().println("<div class='nav-menu'>");
-        response.getWriter().println("<a href='" + request.getContextPath() + "/student/dashboard' class='nav-link active'><i class='fas fa-tachometer-alt'></i> Dashboard</a>");
-        response.getWriter().println("<a href='" + request.getContextPath() + "/facilities' class='nav-link'><i class='fas fa-building'></i> Facilities</a>");
-        response.getWriter().println("<a href='" + request.getContextPath() + "/equipment' class='nav-link'><i class='fas fa-dumbbell'></i> Equipment</a>");
+        
+        if (user.getUserRole() == User.UserRole.MANAGER) {
+            response.getWriter().println("<a href='" + request.getContextPath() + "/manager/dashboard' class='nav-link'><i class='fas fa-tachometer-alt'></i> Dashboard</a>");
+            response.getWriter().println("<a href='" + request.getContextPath() + "/manager/facilities' class='nav-link'><i class='fas fa-building'></i> Facilities</a>");
+            response.getWriter().println("<a href='" + request.getContextPath() + "/manager/equipment' class='nav-link'><i class='fas fa-dumbbell'></i> Equipment</a>");
+        } else {
+            response.getWriter().println("<a href='" + request.getContextPath() + "/student/dashboard' class='nav-link'><i class='fas fa-tachometer-alt'></i> Dashboard</a>");
+            response.getWriter().println("<a href='" + request.getContextPath() + "/facilities' class='nav-link'><i class='fas fa-building'></i> Facilities</a>");
+            response.getWriter().println("<a href='" + request.getContextPath() + "/equipment' class='nav-link'><i class='fas fa-dumbbell'></i> Equipment</a>");
+        }
+        
         response.getWriter().println("<div class='user-dropdown'>");
         response.getWriter().println("<button class='user-btn'>");
         response.getWriter().println("<i class='fas fa-user-circle'></i> <span>" + user.getUsername() + "</span> <i class='fas fa-chevron-down'></i>");
         response.getWriter().println("</button>");
         response.getWriter().println("<div class='dropdown-menu'>");
         response.getWriter().println("<a href='" + request.getContextPath() + "/profile'><i class='fas fa-user'></i> Profile</a>");
-        response.getWriter().println("<a href='" + request.getContextPath() + "/my-rentals'><i class='fas fa-box'></i> My Rentals</a>");
         response.getWriter().println("<hr>");
         response.getWriter().println("<a href='" + request.getContextPath() + "/logout'><i class='fas fa-sign-out-alt'></i> Logout</a>");
         response.getWriter().println("</div>");
@@ -81,41 +74,51 @@ public class StudentDashboardServlet extends HttpServlet {
         response.getWriter().println("</nav>");
         
         response.getWriter().println("<main class='container'>");
-        response.getWriter().println("<div class='dashboard-welcome fade-in-up'>");
-        response.getWriter().println("<h1>Welcome back, " + user.getFullName() + "!</h1>");
-        response.getWriter().println("<p>Ready to book a facility or rent equipment?</p>");
+        response.getWriter().println("<div class='fade-in-up' style='max-width: 600px; margin: 0 auto;'>");
+        response.getWriter().println("<div class='card'>");
+        response.getWriter().println("<h1><i class='fas fa-user-circle'></i> My Profile</h1>");
+        
+        response.getWriter().println("<div class='form-group'>");
+        response.getWriter().println("<label class='form-label'><i class='fas fa-user'></i> Username</label>");
+        response.getWriter().println("<input type='text' class='form-input' value='" + user.getUsername() + "' readonly disabled>");
         response.getWriter().println("</div>");
         
-        // Stats Cards
-        response.getWriter().println("<div class='stats-grid'>");
-        response.getWriter().println("<div class='stat-card fade-in-up'>");
-        response.getWriter().println("<div class='stat-icon'><i class='fas fa-calendar-alt fa-2x'></i></div>");
-        response.getWriter().println("<div class='stat-label'>TOTAL BOOKINGS</div>");
-        response.getWriter().println("<div class='stat-value'>" + totalBookings + "</div>");
+        response.getWriter().println("<div class='form-group'>");
+        response.getWriter().println("<label class='form-label'><i class='fas fa-envelope'></i> Email</label>");
+        response.getWriter().println("<input type='email' class='form-input' value='" + user.getEmail() + "'>");
         response.getWriter().println("</div>");
-        response.getWriter().println("<div class='stat-card fade-in-up'>");
-        response.getWriter().println("<div class='stat-icon'><i class='fas fa-box fa-2x'></i></div>");
-        response.getWriter().println("<div class='stat-label'>ACTIVE RENTALS</div>");
-        response.getWriter().println("<div class='stat-value'>0</div>");
+        
+        response.getWriter().println("<div class='form-group'>");
+        response.getWriter().println("<label class='form-label'><i class='fas fa-signature'></i> Full Name</label>");
+        response.getWriter().println("<input type='text' class='form-input' value='" + user.getFullName() + "'>");
         response.getWriter().println("</div>");
-        response.getWriter().println("<div class='stat-card fade-in-up'>");
-        response.getWriter().println("<div class='stat-icon'><i class='fas fa-clock fa-2x'></i></div>");
-        response.getWriter().println("<div class='stat-label'>UPCOMING</div>");
-        response.getWriter().println("<div class='stat-value'>0</div>");
+        
+        response.getWriter().println("<div class='form-group'>");
+        response.getWriter().println("<label class='form-label'><i class='fas fa-phone'></i> Phone Number</label>");
+        response.getWriter().println("<input type='tel' class='form-input' value='" + user.getPhoneNumber() + "'>");
+        response.getWriter().println("</div>");
+        
+        if (user.getMatricNumber() != null && !user.getMatricNumber().isEmpty()) {
+            response.getWriter().println("<div class='form-group'>");
+            response.getWriter().println("<label class='form-label'><i class='fas fa-id-card'></i> Matric Number</label>");
+            response.getWriter().println("<input type='text' class='form-input' value='" + user.getMatricNumber() + "' readonly disabled>");
+            response.getWriter().println("</div>");
+        }
+        
+        response.getWriter().println("<div class='form-group'>");
+        response.getWriter().println("<label class='form-label'><i class='fas fa-tag'></i> Account Type</label>");
+        response.getWriter().println("<input type='text' class='form-input' value='" + user.getUserRole() + "' readonly disabled>");
+        response.getWriter().println("</div>");
+        
+        response.getWriter().println("<div style='display: flex; gap: 16px; margin-top: 24px;'>");
+        response.getWriter().println("<button class='btn btn-primary' onclick='alert(\"Profile update feature coming soon\")'><i class='fas fa-save'></i> Update Profile</button>");
+        response.getWriter().println("<button class='btn btn-outline' onclick='alert(\"Change password feature coming soon\")'><i class='fas fa-key'></i> Change Password</button>");
+        response.getWriter().println("</div>");
+        
         response.getWriter().println("</div>");
         response.getWriter().println("</div>");
         
-        // Quick Actions
-        response.getWriter().println("<div class='card' style='margin-bottom: var(--spacing-xl);'>");
-        response.getWriter().println("<h3><i class='fas fa-bolt'></i> Quick Actions</h3>");
-        response.getWriter().println("<div style='display: flex; gap: var(--spacing-md); flex-wrap: wrap; margin-top: var(--spacing-md);'>");
-        response.getWriter().println("<a href='" + request.getContextPath() + "/CreateBookingServlet?facilityId=1' class='btn btn-primary'><i class='fas fa-calendar-plus'></i> Book Facility</a>");
-        response.getWriter().println("<a href='" + request.getContextPath() + "/equipment' class='btn btn-outline'><i class='fas fa-dumbbell'></i> Rent Equipment</a>");
-        response.getWriter().println("<a href='" + request.getContextPath() + "/MyBookingsServlet' class='btn btn-outline'><i class='fas fa-list'></i> My Bookings</a>");
-        response.getWriter().println("</div>");
-        response.getWriter().println("</div>");
-        
-        // Footer - Copyright 2026
+        // Footer
         response.getWriter().println("<div class='footer'>");
         response.getWriter().println("<div class='footer-logo'>");
         response.getWriter().println("<img src='" + request.getContextPath() + "/assets/logo.png' alt='Libang Libu' class='footer-logo-img'>");
