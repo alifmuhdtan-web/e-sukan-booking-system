@@ -85,10 +85,10 @@ public class TestDBServlet extends HttpServlet {
             out.println("</ul>");
             
         } catch (ClassNotFoundException e) {
-            out.println("<p class='error'>❌ MySQL Driver not found!</p>");
+            out.println("<p class='error'>MySQL Driver not found!</p>");
             out.println("<p>Error: " + e.getMessage() + "</p>");
         } catch (SQLException e) {
-            out.println("<p class='error'>❌ Database connection failed!</p>");
+            out.println("<p class='error'>Database connection failed!</p>");
             out.println("<p>Error: " + e.getMessage() + "</p>");
         } finally {
             try { if (rs != null) rs.close(); } catch(Exception e) {}
