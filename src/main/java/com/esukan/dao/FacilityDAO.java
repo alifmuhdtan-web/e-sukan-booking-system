@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class FacilityDAO {
     
-    // SQL Queries
+    
     private static final String INSERT_SQL = 
         "INSERT INTO facilities (facility_name, facility_type, description, location, " +
         "capacity, hourly_rate, image_url, opening_time, closing_time, is_available) " +
@@ -20,16 +20,16 @@ public class FacilityDAO {
         "SELECT * FROM facilities WHERE facility_id = ?";
     
     private static final String SELECT_ALL_SQL = 
-        "SELECT * FROM facilities ORDER BY facility_name";
+        "SELECT * FROM facilities ORDER BY facility_id";
     
     private static final String SELECT_AVAILABLE_SQL = 
         "SELECT * FROM facilities WHERE is_available = true " +
         "AND (maintenance_start_date IS NULL OR maintenance_start_date > CURDATE()) " +
-        "ORDER BY facility_name";
+        "ORDER BY facility_id";
     
     private static final String SELECT_BY_TYPE_SQL = 
         "SELECT * FROM facilities WHERE facility_type = ? AND is_available = true " +
-        "ORDER BY facility_name";
+        "ORDER BY facility_id";
     
     private static final String UPDATE_SQL = 
         "UPDATE facilities SET facility_name=?, facility_type=?, description=?, location=?, " +
@@ -41,9 +41,9 @@ public class FacilityDAO {
         "DELETE FROM facilities WHERE facility_id = ?";
     
     private static final String SEARCH_BY_NAME_SQL = 
-        "SELECT * FROM facilities WHERE facility_name LIKE ? AND is_available = true ORDER BY facility_name";
+        "SELECT * FROM facilities WHERE facility_name LIKE ? AND is_available = true ORDER BY facility_id";
     
-    // Map ResultSet to Facility object
+    
     private Facility mapResultSetToFacility(ResultSet rs) throws SQLException {
         Facility facility = new Facility();
         facility.setFacilityId(rs.getInt("facility_id"));

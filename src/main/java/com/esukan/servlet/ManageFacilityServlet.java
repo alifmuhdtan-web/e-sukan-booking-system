@@ -41,7 +41,6 @@ public class ManageFacilityServlet extends HttpServlet {
             return;
         }
         
-        String path = request.getServletPath();
         String action = request.getParameter("action");
         
         try {
@@ -57,7 +56,7 @@ public class ManageFacilityServlet extends HttpServlet {
             } else if ("delete".equals(action)) {
                 int facilityId = Integer.parseInt(request.getParameter("id"));
                 facilityDAO.delete(facilityId);
-                response.sendRedirect(request.getContextPath() + "/manager/facilities?success=Facility deleted successfully");
+                response.sendRedirect(request.getContextPath() + "/manager/facilities?success=Facility deleted");
                 return;
             }
         } catch (SQLException e) {
@@ -97,7 +96,6 @@ public class ManageFacilityServlet extends HttpServlet {
         
         try {
             if ("create".equals(action)) {
-                
                 Facility facility = new Facility();
                 facility.setFacilityName(request.getParameter("facilityName"));
                 facility.setFacilityType(Facility.FacilityType.valueOf(request.getParameter("facilityType")));
@@ -111,10 +109,9 @@ public class ManageFacilityServlet extends HttpServlet {
                 facility.setAvailable(true);
                 
                 facilityDAO.create(facility);
-                response.sendRedirect(request.getContextPath() + "/manager/facilities?success=Facility created successfully");
+                response.sendRedirect(request.getContextPath() + "/manager/facilities?success=Facility created");
                 
             } else if ("update".equals(action)) {
-                
                 int facilityId = Integer.parseInt(request.getParameter("facilityId"));
                 Facility facility = facilityDAO.findById(facilityId).orElse(null);
                 
@@ -130,17 +127,8 @@ public class ManageFacilityServlet extends HttpServlet {
                     facility.setClosingTime(Time.valueOf(request.getParameter("closingTime") + ":00"));
                     facility.setAvailable("true".equals(request.getParameter("isAvailable")));
                     
-                    String maintenanceStart = request.getParameter("maintenanceStartDate");
-                    if (maintenanceStart != null && !maintenanceStart.isEmpty()) {
-                        facility.setMaintenanceStartDate(Timestamp.valueOf(maintenanceStart + " 00:00:00"));
-                    }
-                    String maintenanceEnd = request.getParameter("maintenanceEndDate");
-                    if (maintenanceEnd != null && !maintenanceEnd.isEmpty()) {
-                        facility.setMaintenanceEndDate(Timestamp.valueOf(maintenanceEnd + " 00:00:00"));
-                    }
-                    
                     facilityDAO.update(facility);
-                    response.sendRedirect(request.getContextPath() + "/manager/facilities?success=Facility updated successfully");
+                    response.sendRedirect(request.getContextPath() + "/manager/facilities?success=Facility updated");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/manager/facilities?error=Facility not found");
                 }
