@@ -2,65 +2,153 @@ package com.esukan.servlet;
 
 import com.esukan.dao.FacilityDAO;
 import com.esukan.model.Facility;
+import com.esukan.model.User;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.sql.SQLException;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-@WebServlet(name = "ManageFacilityServlet", urlPatterns = {"/manager/facility"})
+@WebServlet(name = "ManageFacilityServlet", urlPatterns = {"/manager/facilities", "/manager/facility/create", "/manager/facility/update", "/manager/facility/delete"})
 public class ManageFacilityServlet extends HttpServlet {
-    private final FacilityDAO facilityDAO = new FacilityDAO();
-
+    private FacilityDAO facilityDAO;
+    
+    @Override
+    public void init() {
+        facilityDAO = new FacilityDAO();
+    }
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String action = request.getParameter("action");
-        
-        if ("delete".equals(action)) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            facilityDAO.deleteFacility(id);
-            response.sendRedirect(request.getContextPath() + "/manager/facility");
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
         
-        if ("edit".equals(action)) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            Facility facility = facilityDAO.getFacilityById(id);
-            request.setAttribute("facilityToEdit", facility);
+        User user = (User) session.getAttribute("user");
+        if (user.getUserRole() != User.UserRole.MANAGER) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Manager access only");
+            return;
         }
-
-        request.setAttribute("facilities", facilityDAO.getAllFacilities());
-        request.getRequestDispatcher("/WEB-INF/jsp/facility/manage.jsp").forward(request, response);
+        
+        String path = request.getServletPath();
+        String action = request.getParameter("action");
+        
+        try {
+            if ("edit".equals(action)) {
+                int facilityId = Integer.parseInt(request.getParameter("id"));
+                Facility facility = facilityDAO.findById(facilityId).orElse(null);
+                request.setAttribute("facility", facility);
+                request.setAttribute("isEdit", true);
+                request.getRequestDispatcher("/WEB-INF/jsp/facility/manage.jsp")
+                       .forward(request, response);
+                return;
+                
+            } else if ("delete".equals(action)) {
+                int facilityId = Integer.parseInt(request.getParameter("id"));
+                facilityDAO.delete(facilityId);
+                response.sendRedirect(request.getContextPath() + "/manager/facilities?success=Facility deleted successfully");
+                return;
+            }
+        } catch (SQLException e) {
+            response.sendRedirect(request.getContextPath() + "/manager/facilities?error=Database error");
+            return;
+        }
+        
+        
+        try {
+            List<Facility> facilities = facilityDAO.findAll();
+            request.setAttribute("facilities", facilities);
+            request.setAttribute("facilityTypes", Facility.FacilityType.values());
+            request.getRequestDispatcher("/WEB-INF/jsp/facility/manage.jsp")
+                   .forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException(e);
+        }
     }
-
+    
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String idParam = request.getParameter("id");
-        String name = request.getParameter("name");
-        String type = request.getParameter("type");
-        String description = request.getParameter("description");
-        double price = Double.parseDouble(request.getParameter("pricePerHour"));
-        String status = request.getParameter("status");
-
-        Facility facility = new Facility();
-        facility.setName(name);
-        facility.setType(type);
-        facility.setDescription(description);
-        facility.setPricePerHour(price);
-        facility.setStatus(status);
-
-        if (idParam == null || idParam.trim().isEmpty()) {
-            facilityDAO.insertFacility(facility);
-        } else {
-            facility.setId(Integer.parseInt(idParam));
-            facilityDAO.updateFacility(facility);
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
         }
-
-        response.sendRedirect(request.getContextPath() + "/manager/facility");
+        
+        User user = (User) session.getAttribute("user");
+        if (user.getUserRole() != User.UserRole.MANAGER) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Manager access only");
+            return;
+        }
+        
+        String action = request.getParameter("action");
+        
+        try {
+            if ("create".equals(action)) {
+                
+                Facility facility = new Facility();
+                facility.setFacilityName(request.getParameter("facilityName"));
+                facility.setFacilityType(Facility.FacilityType.valueOf(request.getParameter("facilityType")));
+                facility.setDescription(request.getParameter("description"));
+                facility.setLocation(request.getParameter("location"));
+                facility.setCapacity(Integer.parseInt(request.getParameter("capacity")));
+                facility.setHourlyRate(new BigDecimal(request.getParameter("hourlyRate")));
+                facility.setImageUrl(request.getParameter("imageUrl"));
+                facility.setOpeningTime(Time.valueOf(request.getParameter("openingTime") + ":00"));
+                facility.setClosingTime(Time.valueOf(request.getParameter("closingTime") + ":00"));
+                facility.setAvailable(true);
+                
+                facilityDAO.create(facility);
+                response.sendRedirect(request.getContextPath() + "/manager/facilities?success=Facility created successfully");
+                
+            } else if ("update".equals(action)) {
+                
+                int facilityId = Integer.parseInt(request.getParameter("facilityId"));
+                Facility facility = facilityDAO.findById(facilityId).orElse(null);
+                
+                if (facility != null) {
+                    facility.setFacilityName(request.getParameter("facilityName"));
+                    facility.setFacilityType(Facility.FacilityType.valueOf(request.getParameter("facilityType")));
+                    facility.setDescription(request.getParameter("description"));
+                    facility.setLocation(request.getParameter("location"));
+                    facility.setCapacity(Integer.parseInt(request.getParameter("capacity")));
+                    facility.setHourlyRate(new BigDecimal(request.getParameter("hourlyRate")));
+                    facility.setImageUrl(request.getParameter("imageUrl"));
+                    facility.setOpeningTime(Time.valueOf(request.getParameter("openingTime") + ":00"));
+                    facility.setClosingTime(Time.valueOf(request.getParameter("closingTime") + ":00"));
+                    facility.setAvailable("true".equals(request.getParameter("isAvailable")));
+                    
+                    String maintenanceStart = request.getParameter("maintenanceStartDate");
+                    if (maintenanceStart != null && !maintenanceStart.isEmpty()) {
+                        facility.setMaintenanceStartDate(Timestamp.valueOf(maintenanceStart + " 00:00:00"));
+                    }
+                    String maintenanceEnd = request.getParameter("maintenanceEndDate");
+                    if (maintenanceEnd != null && !maintenanceEnd.isEmpty()) {
+                        facility.setMaintenanceEndDate(Timestamp.valueOf(maintenanceEnd + " 00:00:00"));
+                    }
+                    
+                    facilityDAO.update(facility);
+                    response.sendRedirect(request.getContextPath() + "/manager/facilities?success=Facility updated successfully");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/manager/facilities?error=Facility not found");
+                }
+            } else {
+                response.sendRedirect(request.getContextPath() + "/manager/facilities");
+            }
+        } catch (Exception e) {
+            response.sendRedirect(request.getContextPath() + "/manager/facilities?error=" + e.getMessage());
+        }
     }
 }

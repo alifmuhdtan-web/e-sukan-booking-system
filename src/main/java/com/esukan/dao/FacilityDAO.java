@@ -1,110 +1,216 @@
-package com.esukan.dao; // Sesuaikan mengikut nama package asal projek korang
+package com.esukan.dao;
 
 import com.esukan.model.Facility;
+import com.esukan.util.DatabaseUtil;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class FacilityDAO {
     
-    // Gunakan fungsi connection yang sedia ada dalam projek korang. 
-    // Contoh di bawah mengandaikan ada kelas DBConnection.
-    private Connection getConnection() throws SQLException {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        // Menghubungkan menggunakan user khusus yang Safwan set tadi
-        return DriverManager.getConnection("jdbc:mysql://localhost:3306/esukan_db", "esukan_user", "1234!");
+    // SQL Queries
+    private static final String INSERT_SQL = 
+        "INSERT INTO facilities (facility_name, facility_type, description, location, " +
+        "capacity, hourly_rate, image_url, opening_time, closing_time, is_available) " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    private static final String SELECT_BY_ID_SQL = 
+        "SELECT * FROM facilities WHERE facility_id = ?";
+    
+    private static final String SELECT_ALL_SQL = 
+        "SELECT * FROM facilities ORDER BY facility_name";
+    
+    private static final String SELECT_AVAILABLE_SQL = 
+        "SELECT * FROM facilities WHERE is_available = true " +
+        "AND (maintenance_start_date IS NULL OR maintenance_start_date > CURDATE()) " +
+        "ORDER BY facility_name";
+    
+    private static final String SELECT_BY_TYPE_SQL = 
+        "SELECT * FROM facilities WHERE facility_type = ? AND is_available = true " +
+        "ORDER BY facility_name";
+    
+    private static final String UPDATE_SQL = 
+        "UPDATE facilities SET facility_name=?, facility_type=?, description=?, location=?, " +
+        "capacity=?, hourly_rate=?, image_url=?, opening_time=?, closing_time=?, " +
+        "is_available=?, maintenance_start_date=?, maintenance_end_date=? " +
+        "WHERE facility_id = ?";
+    
+    private static final String DELETE_SQL = 
+        "DELETE FROM facilities WHERE facility_id = ?";
+    
+    private static final String SEARCH_BY_NAME_SQL = 
+        "SELECT * FROM facilities WHERE facility_name LIKE ? AND is_available = true ORDER BY facility_name";
+    
+    // Map ResultSet to Facility object
+    private Facility mapResultSetToFacility(ResultSet rs) throws SQLException {
+        Facility facility = new Facility();
+        facility.setFacilityId(rs.getInt("facility_id"));
+        facility.setFacilityName(rs.getString("facility_name"));
+        facility.setFacilityType(Facility.FacilityType.valueOf(rs.getString("facility_type")));
+        facility.setDescription(rs.getString("description"));
+        facility.setLocation(rs.getString("location"));
+        facility.setCapacity(rs.getInt("capacity"));
+        facility.setHourlyRate(rs.getBigDecimal("hourly_rate"));
+        facility.setImageUrl(rs.getString("image_url"));
+        facility.setOpeningTime(rs.getTime("opening_time"));
+        facility.setClosingTime(rs.getTime("closing_time"));
+        facility.setAvailable(rs.getBoolean("is_available"));
+        facility.setMaintenanceStartDate(rs.getTimestamp("maintenance_start_date"));
+        facility.setMaintenanceEndDate(rs.getTimestamp("maintenance_end_date"));
+        facility.setCreatedAt(rs.getTimestamp("created_at"));
+        facility.setUpdatedAt(rs.getTimestamp("updated_at"));
+        return facility;
     }
-
-    // 1. Ambil SEMUA fasiliti (Untuk list.jsp)
-    public List<Facility> getAllFacilities() {
-        List<Facility> facilities = new ArrayList<>();
-        String query = "SELECT * FROM facilities";
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                facilities.add(new Facility(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("type"),
-                    rs.getString("description"),
-                    rs.getDouble("price_per_hour"),
-                    rs.getString("status")
-                ));
+    
+    
+    public Facility create(Facility facility) throws SQLException {
+        String generatedColumns[] = {"facility_id"};
+        
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(INSERT_SQL, generatedColumns)) {
+            
+            pstmt.setString(1, facility.getFacilityName());
+            pstmt.setString(2, facility.getFacilityType().toString());
+            pstmt.setString(3, facility.getDescription());
+            pstmt.setString(4, facility.getLocation());
+            pstmt.setInt(5, facility.getCapacity());
+            pstmt.setBigDecimal(6, facility.getHourlyRate());
+            pstmt.setString(7, facility.getImageUrl());
+            pstmt.setTime(8, facility.getOpeningTime());
+            pstmt.setTime(9, facility.getClosingTime());
+            pstmt.setBoolean(10, facility.isAvailable());
+            
+            pstmt.executeUpdate();
+            
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    facility.setFacilityId(rs.getInt(1));
+                }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            return facility;
+        }
+    }
+    
+    
+    public Optional<Facility> findById(int id) throws SQLException {
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SELECT_BY_ID_SQL)) {
+            
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return Optional.of(mapResultSetToFacility(rs));
+            }
+        }
+        return Optional.empty();
+    }
+    
+    
+    public List<Facility> findAll() throws SQLException {
+        List<Facility> facilities = new ArrayList<>();
+        try (Connection conn = DatabaseUtil.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(SELECT_ALL_SQL)) {
+            
+            while (rs.next()) {
+                facilities.add(mapResultSetToFacility(rs));
+            }
         }
         return facilities;
     }
-
-    // 2. Ambil SATU fasiliti berdasarkan ID (Untuk detail.jsp)
-    public Facility getFacilityById(int id) {
-        String query = "SELECT * FROM facilities WHERE id = ?";
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new Facility(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("type"),
-                        rs.getString("description"),
-                        rs.getDouble("price_per_hour"),
-                        rs.getString("status")
-                    );
-                }
+    
+    
+    public List<Facility> findAvailableFacilities() throws SQLException {
+        List<Facility> facilities = new ArrayList<>();
+        try (Connection conn = DatabaseUtil.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(SELECT_AVAILABLE_SQL)) {
+            
+            while (rs.next()) {
+                facilities.add(mapResultSetToFacility(rs));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return null;
+        return facilities;
     }
-
-    // 3. TAMBAH fasiliti baru (Manager CRUD)
-    public boolean insertFacility(Facility facility) {
-        String query = "INSERT INTO facilities (name, type, description, price_per_hour, status) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setString(1, facility.getName());
-            ps.setString(2, facility.getType());
-            ps.setString(3, facility.getDescription());
-            ps.setDouble(4, facility.getPricePerHour());
-            ps.setString(5, facility.getStatus());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+    
+    
+    public List<Facility> findByType(Facility.FacilityType type) throws SQLException {
+        List<Facility> facilities = new ArrayList<>();
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SELECT_BY_TYPE_SQL)) {
+            
+            pstmt.setString(1, type.toString());
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                facilities.add(mapResultSetToFacility(rs));
+            }
+        }
+        return facilities;
+    }
+    
+    
+    public List<Facility> searchByName(String keyword) throws SQLException {
+        List<Facility> facilities = new ArrayList<>();
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SEARCH_BY_NAME_SQL)) {
+            
+            pstmt.setString(1, "%" + keyword + "%");
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                facilities.add(mapResultSetToFacility(rs));
+            }
+        }
+        return facilities;
+    }
+    
+    
+    public boolean update(Facility facility) throws SQLException {
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(UPDATE_SQL)) {
+            
+            pstmt.setString(1, facility.getFacilityName());
+            pstmt.setString(2, facility.getFacilityType().toString());
+            pstmt.setString(3, facility.getDescription());
+            pstmt.setString(4, facility.getLocation());
+            pstmt.setInt(5, facility.getCapacity());
+            pstmt.setBigDecimal(6, facility.getHourlyRate());
+            pstmt.setString(7, facility.getImageUrl());
+            pstmt.setTime(8, facility.getOpeningTime());
+            pstmt.setTime(9, facility.getClosingTime());
+            pstmt.setBoolean(10, facility.isAvailable());
+            pstmt.setTimestamp(11, facility.getMaintenanceStartDate());
+            pstmt.setTimestamp(12, facility.getMaintenanceEndDate());
+            pstmt.setInt(13, facility.getFacilityId());
+            
+            return pstmt.executeUpdate() > 0;
         }
     }
-
-    // 4. KEMASKINI fasiliti (Manager CRUD)
-    public boolean updateFacility(Facility facility) {
-        String query = "UPDATE facilities SET name=?, type=?, description=?, price_per_hour=?, status=? WHERE id=?";
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setString(1, facility.getName());
-            ps.setString(2, facility.getType());
-            ps.setString(3, facility.getDescription());
-            ps.setDouble(4, facility.getPricePerHour());
-            ps.setString(5, facility.getStatus());
-            ps.setInt(6, facility.getId());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+    
+    
+    public boolean delete(int id) throws SQLException {
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(DELETE_SQL)) {
+            
+            pstmt.setInt(1, id);
+            return pstmt.executeUpdate() > 0;
         }
     }
-
-    // 5. PADAM fasiliti (Manager CRUD)
-    public boolean deleteFacility(int id) {
-        String query = "DELETE FROM facilities WHERE id = ?";
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+    
+    
+    public int count() throws SQLException {
+        try (Connection conn = DatabaseUtil.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM facilities")) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
         }
+        return 0;
     }
 }
