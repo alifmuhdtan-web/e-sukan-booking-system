@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Database ERD - E-Sukan System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 30px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .erd-image {
+            text-align: center;
+            margin: 30px 0;
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .erd-image img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .legend {
+            background: #f0f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        .legend h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .legend-item {
+            display: inline-block;
+            margin-right: 30px;
+            margin-bottom: 10px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-pk { background: #667eea; color: white; }
+        .badge-fk { background: #48bb78; color: white; }
+        .table-list {
+            margin-top: 30px;
+        }
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .table-card {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .table-card h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        .table-card p {
+            font-size: 12px;
+            color: #666;
+        }
+        .nav-links {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .nav-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 E-Sukan Database ERD</h1>
+        <p class="subtitle">Entity Relationship Diagram - Campus Facility & Equipment Booking System</p>
+        
+        <div class="erd-image">
+            <img src="erd.png" alt="E-Sukan Database ERD">
+        </div>
+        
+        <div class="legend">
+            <h3>📖 Legend</h3>
+            <div>
+                <span class="legend-item"><span class="badge badge-pk">PK</span> = Primary Key</span>
+                <span class="legend-item"><span class="badge badge-fk">FK</span> = Foreign Key</span>
+                <span class="legend-item">🔗 <strong>1</strong> = One</span>
+                <span class="legend-item">🔗 <strong>∞</strong> = Many</span>
+                <span class="legend-item">📐 <strong>1 ──< ∞</strong> = One-to-Many</span>
+            </div>
+        </div>
+        
+        <div class="table-list">
+            <h3>📋 Database Tables Summary</h3>
+            <div class="table-grid">
+                <div class="table-card">
+                    <h4>users</h4>
+                    <p>Stores system users (students & managers)</p>
+                </div>
+                <div class="table-card">
+                    <h4>facilities</h4>
+                    <p>Sports facilities/courts information</p>
+                </div>
+                <div class="table-card">
+                    <h4>equipment</h4>
+                    <p>Sports equipment inventory</p>
+                </div>
+                <div class="table-card">
+                    <h4>bookings</h4>
+                    <p>Facility reservations</p>
+                </div>
+                <div class="table-card">
+                    <h4>equipment_rental</h4>
+                    <p>Equipment rental transactions</p>
+                </div>
+                <div class="table-card">
+                    <h4>booking_equipment</h4>
+                    <p>Junction table (bookings ↔ equipment)</p>
+                </div>
+                <div class="table-card">
+                    <h4>usage_logs</h4>
+                    <p>Facility usage tracking for analytics</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-links">
+            <a href="index.html">🏠 Navigation Hub</a>
+            <a href="login.html">🔐 Login Page</a>
+            <a href="register.html">📝 Registration</a>
+            <a href="student-dashboard.html">👨‍🎓 Student Dashboard</a>
+            <a href="manager-dashboard.html">👔 Manager Dashboard</a>
+        </div>
+        
+        <div class="footer">
+            <p>E-Sukan - Campus Facility & Equipment Booking System | ERD Version 2.0</p>
+        </div>
+    </div>
+</body>
+</html>

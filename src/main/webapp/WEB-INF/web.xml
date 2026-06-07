@@ -1,55 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee           http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    
     <display-name>E-Sukan Campus Booking System</display-name>
-    <!-- Session Configuration -->
-    <servlet>
-        <servlet-name>RentEquipmentServlet</servlet-name>
-        <servlet-class>com.esukan.servlet.RentEquipmentServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>MyRentalsServlet</servlet-name>
-        <servlet-class>com.esukan.servlet.MyRentalsServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>ManageEquipmentServlet</servlet-name>
-        <servlet-class>com.esukan.servlet.ManageEquipmentServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>EquipmentListServlet</servlet-name>
-        <servlet-class>com.esukan.servlet.EquipmentListServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>TestEquipmentServlet</servlet-name>
-        <servlet-class>com.esukan.servlet.TestEquipmentServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>RentEquipmentServlet</servlet-name>
-        <url-pattern>/RentEquipmentServlet</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>MyRentalsServlet</servlet-name>
-        <url-pattern>/MyRentalsServlet</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>ManageEquipmentServlet</servlet-name>
-        <url-pattern>/ManageEquipmentServlet</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>EquipmentListServlet</servlet-name>
-        <url-pattern>/EquipmentListServlet</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>TestEquipmentServlet</servlet-name>
-        <url-pattern>/TestEquipmentServlet</url-pattern>
-    </servlet-mapping>
+    
+    
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+    
+    
     <session-config>
         <session-timeout>30</session-timeout>
     </session-config>
-    <!-- Welcome File List -->
-    <welcome-file-list>
-        <welcome-file>index.jsp</welcome-file>
-    </welcome-file-list>
-    <!-- Error Pages -->
+    
+    
     <error-page>
         <error-code>404</error-code>
         <location>/WEB-INF/jsp/common/404.jsp</location>
@@ -58,4 +26,5 @@
         <error-code>500</error-code>
         <location>/WEB-INF/jsp/common/error.jsp</location>
     </error-page>
+    
 </web-app>
