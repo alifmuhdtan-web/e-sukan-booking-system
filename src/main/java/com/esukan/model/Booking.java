@@ -32,9 +32,11 @@ public class Booking {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     
+    // Join fields
     private String facilityName;
     private String userName;
     
+    // Constructors
     public Booking() {}
     
     public Booking(int userId, int facilityId, Date bookingDate, 
@@ -49,8 +51,9 @@ public class Booking {
         this.bookingStatus = BookingStatus.CONFIRMED;
     }
     
-    // Getters
+    // ==================== GETTERS ====================
     public int getBookingId() { return bookingId; }
+    public int getId() { return bookingId; }  // Alias for JSP compatibility
     public String getBookingReference() { return bookingReference; }
     public int getUserId() { return userId; }
     public int getFacilityId() { return facilityId; }
@@ -61,7 +64,7 @@ public class Booking {
     public BigDecimal getTotalCost() { return totalCost; }
     public PaymentStatus getPaymentStatus() { return paymentStatus; }
     public BookingStatus getBookingStatus() { return bookingStatus; }
-    public String getBookingStatusString() { return bookingStatus != null ? bookingStatus.toString() : ""; }
+    public String getStatus() { return bookingStatus != null ? bookingStatus.toString() : "CONFIRMED"; } // Alias for JSP
     public String getSpecialRequests() { return specialRequests; }
     public String getCancellationReason() { return cancellationReason; }
     public Timestamp getCancelledAt() { return cancelledAt; }
@@ -70,8 +73,9 @@ public class Booking {
     public String getFacilityName() { return facilityName; }
     public String getUserName() { return userName; }
     
-    // Setters
+    // ==================== SETTERS ====================
     public void setBookingId(int bookingId) { this.bookingId = bookingId; }
+    public void setId(int id) { this.bookingId = id; } // Alias for JSP compatibility
     public void setBookingReference(String bookingReference) { this.bookingReference = bookingReference; }
     public void setUserId(int userId) { this.userId = userId; }
     public void setFacilityId(int facilityId) { this.facilityId = facilityId; }
@@ -82,6 +86,15 @@ public class Booking {
     public void setTotalCost(BigDecimal totalCost) { this.totalCost = totalCost; }
     public void setPaymentStatus(PaymentStatus paymentStatus) { this.paymentStatus = paymentStatus; }
     public void setBookingStatus(BookingStatus bookingStatus) { this.bookingStatus = bookingStatus; }
+    public void setStatus(String status) { 
+        if (status != null) {
+            try {
+                this.bookingStatus = BookingStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                this.bookingStatus = BookingStatus.CONFIRMED;
+            }
+        }
+    }
     public void setSpecialRequests(String specialRequests) { this.specialRequests = specialRequests; }
     public void setCancellationReason(String cancellationReason) { this.cancellationReason = cancellationReason; }
     public void setCancelledAt(Timestamp cancelledAt) { this.cancelledAt = cancelledAt; }

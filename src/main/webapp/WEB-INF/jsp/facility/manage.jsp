@@ -9,6 +9,18 @@
     Boolean isEdit = (Boolean) request.getAttribute("isEdit");
     String success = request.getParameter("success");
     String error = request.getParameter("error");
+    
+    // Format time for display (HH:MM)
+    String openingTimeValue = "08:00";
+    String closingTimeValue = "22:00";
+    if (editFacility != null && editFacility.getOpeningTime() != null) {
+        String timeStr = editFacility.getOpeningTime().toString();
+        openingTimeValue = timeStr.length() >= 5 ? timeStr.substring(0, 5) : "08:00";
+    }
+    if (editFacility != null && editFacility.getClosingTime() != null) {
+        String timeStr = editFacility.getClosingTime().toString();
+        closingTimeValue = timeStr.length() >= 5 ? timeStr.substring(0, 5) : "22:00";
+    }
 %>
 <!DOCTYPE html>
 <html>
@@ -18,6 +30,7 @@
     <title>Libang Libu - Manage Facilities</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/modern.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="${pageContext.request.contextPath}/favicon.ico">
     <style>
         .form-row {
             display: flex;
@@ -132,11 +145,13 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-clock"></i> Opening Time <span style="color: red;">*</span></label>
-                            <input type="time" name="openingTime" class="form-input" value="<%= editFacility != null ? editFacility.getOpeningTime() : "08:00" %>" required>
+                            <input type="time" name="openingTime" class="form-input" 
+                                   value="<%= openingTimeValue %>" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-clock"></i> Closing Time <span style="color: red;">*</span></label>
-                            <input type="time" name="closingTime" class="form-input" value="<%= editFacility != null ? editFacility.getClosingTime() : "22:00" %>" required>
+                            <input type="time" name="closingTime" class="form-input" 
+                                   value="<%= closingTimeValue %>" required>
                         </div>
                     </div>
                     
@@ -183,7 +198,11 @@
                                     <td style="padding: 12px;"><%= f.getFacilityType() %></td>
                                     <td style="padding: 12px;"><%= f.getLocation() %></td>
                                     <td style="padding: 12px;">RM <%= f.getHourlyRate() %></td>
-                                    <td style="padding: 12px;"><span style="background: <%= f.isAvailable() ? "#D1FAE5" : "#FEF3C7" %>; color: <%= f.isAvailable() ? "#065F46" : "#92400E" %>; padding: 4px 12px; border-radius: 20px; font-size: 12px;"><%= f.isAvailable() ? "Available" : "Maintenance" %></span></td>
+                                    <td style="padding: 12px;">
+                                        <span style="background: <%= f.isAvailable() ? "#D1FAE5" : "#FEF3C7" %>; color: <%= f.isAvailable() ? "#065F46" : "#92400E" %>; padding: 4px 12px; border-radius: 20px; font-size: 12px;">
+                                            <%= f.isAvailable() ? "Available" : "Maintenance" %>
+                                        </span>
+                                    </td>
                                     <td style="padding: 12px;">
                                         <a href="${pageContext.request.contextPath}/manager/facilities?action=edit&id=<%= f.getFacilityId() %>" class="btn btn-outline btn-sm"><i class="fas fa-edit"></i> Edit</a>
                                         <a href="${pageContext.request.contextPath}/manager/facilities?action=delete&id=<%= f.getFacilityId() %>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this facility?')" style="margin-left: 8px;"><i class="fas fa-trash"></i> Delete</a>

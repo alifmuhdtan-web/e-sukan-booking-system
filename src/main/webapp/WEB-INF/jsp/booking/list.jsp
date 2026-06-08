@@ -1,183 +1,133 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="com.esukan.model.Booking" %>
+<%@ page import="com.esukan.model.User" %>
 <%
+    User user = (User) session.getAttribute("user");
     List<Booking> bookingList = (List<Booking>) request.getAttribute("bookingList");
-    String success = request.getParameter("success");
-    if (success == null) {
-        success = (String) request.getAttribute("success");
-    }
-    String error = request.getParameter("error");
-    if (error == null) {
-        error = (String) request.getAttribute("error");
-    }
+    String success = (String) request.getAttribute("success");
+    String error = (String) request.getAttribute("error");
 %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>My Bookings - E-Sukan</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-        }
-        .navbar {
-            background: #667eea;
-            padding: 15px 30px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-        }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 30px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background: #667eea;
-            color: white;
-        }
-        .status-CONFIRMED {
-            color: green;
-            font-weight: bold;
-        }
-        .status-CANCELLED {
-            color: red;
-            font-weight: bold;
-        }
-        .status-COMPLETED {
-            color: blue;
-            font-weight: bold;
-        }
-        .btn-cancel {
-            background: #dc3545;
-            color: white;
-            padding: 5px 10px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 12px;
-        }
-        .btn-cancel:hover {
-            background: #c82333;
-        }
-        .btn-book {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        .success {
-            background: #d4edda;
-            color: #155724;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .empty {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libang Libu - My Bookings</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/modern.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="${pageContext.request.contextPath}/favicon.ico">
 </head>
 <body>
-    <div class="navbar">
-        <div><strong>🏟️ E-Sukan</strong> - My Bookings</div>
-        <div>
-            <a href="${pageContext.request.contextPath}/student/dashboard">Dashboard</a>
-            <a href="${pageContext.request.contextPath}/logout">Logout</a>
-        </div>
-    </div>
-    <div class="container">
-        <h1>My Bookings</h1>
-        
-        <% if (success != null) { %>
-            <div class="success"><%= success %></div>
-        <% } %>
-        
-        <% if (error != null) { %>
-            <div class="error"><%= error %></div>
-        <% } %>
-        
-        <% if (bookingList == null || bookingList.isEmpty()) { %>
-            <div class="empty">
-                <p>You have no bookings yet.</p>
-                <a href="${pageContext.request.contextPath}/CreateBookingServlet?facilityId=1" class="btn-book">📅 Book a Facility</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="${pageContext.request.contextPath}/assets/logo.png" alt="Libang Libu" class="nav-logo">
+                <div class="nav-brand-text">
+                    <span class="nav-brand-name">Libang Libu</span>
+                    <span class="nav-brand-sub">E-Sukan System</span>
+                </div>
             </div>
-        <% } else { %>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Facility</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Cost (RM)</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% for (Booking booking : bookingList) { %>
-                    <tr>
-                        <td><%= booking.getId() %></td>
-                        <td><%= booking.getFacilityName() %></td>
-                        <td><%= booking.getBookingDate() %></td>
-                        <td><%= booking.getStartTime() %> - <%= booking.getEndTime() %></td>
-                        <td>RM <%= String.format("%.2f", booking.getTotalCost()) %></td>
-                        <td class="status-<%= booking.getStatus() %>"><%= booking.getStatus() %></td>
-                        <td>
-                            <% if ("CONFIRMED".equals(booking.getStatus())) { %>
-                                <a href="${pageContext.request.contextPath}/CancelBookingServlet?id=<%= booking.getId() %>" 
-                                   class="btn-cancel" 
-                                   onclick="return confirm('Are you sure you want to cancel this booking?')">Cancel</a>
-                            <% } else { %>
-                                -
+            <div class="nav-menu">
+                <a href="${pageContext.request.contextPath}/student/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="${pageContext.request.contextPath}/facilities" class="nav-link"><i class="fas fa-building"></i> Facilities</a>
+                <a href="${pageContext.request.contextPath}/equipment" class="nav-link"><i class="fas fa-dumbbell"></i> Equipment</a>
+                <div class="user-dropdown">
+                    <button class="user-btn">
+                        <i class="fas fa-user-circle"></i> <span><%= user.getUsername() %></span> <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="${pageContext.request.contextPath}/profile"><i class="fas fa-user"></i> Profile</a>
+                        <a href="${pageContext.request.contextPath}/my-rentals"><i class="fas fa-box"></i> My Rentals</a>
+                        <hr>
+                        <a href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="fade-in-up">
+            <h1><i class="fas fa-calendar-alt"></i> My Bookings</h1>
+            <p class="text-secondary" style="margin-bottom: 24px;">View and manage your facility bookings</p>
+            
+            <% if (success != null) { %>
+                <div style="background: #D1FAE5; color: #065F46; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #10B981;">
+                    <i class="fas fa-check-circle"></i> <%= success %>
+                </div>
+            <% } %>
+            
+            <% if (error != null) { %>
+                <div style="background: #FEE2E2; color: #991B1B; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #EF4444;">
+                    <i class="fas fa-exclamation-circle"></i> <%= error %>
+                </div>
+            <% } %>
+            
+            <% if (bookingList == null || bookingList.isEmpty()) { %>
+                <div style="text-align: center; padding: 60px; background: white; border-radius: 16px;">
+                    <i class="fas fa-calendar-times" style="font-size: 48px; color: #94A3B8; margin-bottom: 16px; display: block;"></i>
+                    <h3>No bookings yet</h3>
+                    <p style="color: #64748B;">Book a facility to get started</p>
+                    <a href="${pageContext.request.contextPath}/facilities" class="btn btn-primary" style="margin-top: 16px;"><i class="fas fa-calendar-plus"></i> Browse Facilities</a>
+                </div>
+            <% } else { %>
+                <div style="overflow-x: auto; background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Reference</th>
+                                <th>Facility</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Cost (RM)</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for (Booking booking : bookingList) { %>
+                                <tr>
+                                    <td><%= booking.getId() %></td>
+                                    <td><%= booking.getBookingReference() != null ? booking.getBookingReference() : "N/A" %></td>
+                                    <td><%= booking.getFacilityName() != null ? booking.getFacilityName() : "Facility " + booking.getFacilityId() %></td>
+                                    <td><%= booking.getBookingDate() %></td>
+                                    <td><%= booking.getStartTime() %> - <%= booking.getEndTime() %></td>
+                                    <td>RM <%= booking.getTotalCost() %></td>
+                                    <td>
+                                        <span class="badge <%= "CONFIRMED".equals(booking.getStatus()) ? "badge-success" : "badge-warning" %>">
+                                            <%= booking.getStatus() %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% if ("CONFIRMED".equals(booking.getStatus())) { %>
+                                            <a href="${pageContext.request.contextPath}/CancelBookingServlet?id=<%= booking.getId() %>" 
+                                               class="btn btn-danger btn-sm" 
+                                               onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </a>
+                                        <% } else { %>
+                                            <span class="text-secondary">-</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
                             <% } %>
-                        </td>
-                    </tr>
-                    <% } %>
-                </tbody>
-            </table>
-        <% } %>
-    </div>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-logo">
+                <img src="${pageContext.request.contextPath}/assets/logo.png" alt="Libang Libu" class="footer-logo-img">
+                <span>Libang Libu - E-Sukan System</span>
+            </div>
+            <p>© 2026 Libang Libu - All Rights Reserved.</p>
+        </div>
+    </main>
+    
+    <script src="${pageContext.request.contextPath}/js/app.js"></script>
 </body>
 </html>

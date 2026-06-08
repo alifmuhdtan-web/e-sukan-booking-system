@@ -1,6 +1,7 @@
 package com.esukan.servlet;
 
 import com.esukan.dao.BookingDAO;
+import com.esukan.dao.EquipmentDAO;
 import com.esukan.model.User;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -13,10 +14,12 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "StudentDashboardServlet", urlPatterns = {"/student/dashboard"})
 public class StudentDashboardServlet extends HttpServlet {
     private BookingDAO bookingDAO;
+    private EquipmentDAO equipmentDAO;
     
     @Override
     public void init() {
         bookingDAO = new BookingDAO();
+        equipmentDAO = new EquipmentDAO();
     }
     
     @Override
@@ -31,9 +34,11 @@ public class StudentDashboardServlet extends HttpServlet {
         
         User user = (User) session.getAttribute("user");
         int totalBookings = 0;
+        int activeRentals = 0;
         
         try {
             totalBookings = bookingDAO.countByUser(user.getUserId());
+            activeRentals = equipmentDAO.countActiveRentalsByUser(user.getUserId());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -86,23 +91,23 @@ public class StudentDashboardServlet extends HttpServlet {
         response.getWriter().println("<p>Ready to book a facility or rent equipment?</p>");
         response.getWriter().println("</div>");
         
-        // Stats Cards
+        // Stats Cards - Only 2 cards (NO POINTS)
         response.getWriter().println("<div class='stats-grid'>");
+        
+        // Card 1: Total Bookings
         response.getWriter().println("<div class='stat-card fade-in-up'>");
         response.getWriter().println("<div class='stat-icon'><i class='fas fa-calendar-alt fa-2x'></i></div>");
         response.getWriter().println("<div class='stat-label'>TOTAL BOOKINGS</div>");
         response.getWriter().println("<div class='stat-value'>" + totalBookings + "</div>");
         response.getWriter().println("</div>");
+        
+        // Card 2: Active Rentals
         response.getWriter().println("<div class='stat-card fade-in-up'>");
         response.getWriter().println("<div class='stat-icon'><i class='fas fa-box fa-2x'></i></div>");
         response.getWriter().println("<div class='stat-label'>ACTIVE RENTALS</div>");
-        response.getWriter().println("<div class='stat-value'>0</div>");
+        response.getWriter().println("<div class='stat-value'>" + activeRentals + "</div>");
         response.getWriter().println("</div>");
-        response.getWriter().println("<div class='stat-card fade-in-up'>");
-        response.getWriter().println("<div class='stat-icon'><i class='fas fa-clock fa-2x'></i></div>");
-        response.getWriter().println("<div class='stat-label'>UPCOMING</div>");
-        response.getWriter().println("<div class='stat-value'>0</div>");
-        response.getWriter().println("</div>");
+        
         response.getWriter().println("</div>");
         
         // Quick Actions
@@ -115,7 +120,7 @@ public class StudentDashboardServlet extends HttpServlet {
         response.getWriter().println("</div>");
         response.getWriter().println("</div>");
         
-        // Footer - Copyright 2026
+        // Footer
         response.getWriter().println("<div class='footer'>");
         response.getWriter().println("<div class='footer-logo'>");
         response.getWriter().println("<img src='" + request.getContextPath() + "/assets/logo.png' alt='Libang Libu' class='footer-logo-img'>");

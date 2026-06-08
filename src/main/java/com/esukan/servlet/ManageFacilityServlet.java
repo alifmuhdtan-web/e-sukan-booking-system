@@ -64,7 +64,7 @@ public class ManageFacilityServlet extends HttpServlet {
             return;
         }
         
-        
+        // List all facilities
         try {
             List<Facility> facilities = facilityDAO.findAll();
             request.setAttribute("facilities", facilities);
@@ -96,6 +96,7 @@ public class ManageFacilityServlet extends HttpServlet {
         
         try {
             if ("create".equals(action)) {
+                // Create new facility
                 Facility facility = new Facility();
                 facility.setFacilityName(request.getParameter("facilityName"));
                 facility.setFacilityType(Facility.FacilityType.valueOf(request.getParameter("facilityType")));
@@ -104,14 +105,30 @@ public class ManageFacilityServlet extends HttpServlet {
                 facility.setCapacity(Integer.parseInt(request.getParameter("capacity")));
                 facility.setHourlyRate(new BigDecimal(request.getParameter("hourlyRate")));
                 facility.setImageUrl(request.getParameter("imageUrl"));
-                facility.setOpeningTime(Time.valueOf(request.getParameter("openingTime") + ":00"));
-                facility.setClosingTime(Time.valueOf(request.getParameter("closingTime") + ":00"));
+                
+                // Handle time fields with null check
+                String openingTimeStr = request.getParameter("openingTime");
+                String closingTimeStr = request.getParameter("closingTime");
+                
+                if (openingTimeStr != null && !openingTimeStr.isEmpty()) {
+                    facility.setOpeningTime(Time.valueOf(openingTimeStr + ":00"));
+                } else {
+                    facility.setOpeningTime(Time.valueOf("08:00:00"));
+                }
+                
+                if (closingTimeStr != null && !closingTimeStr.isEmpty()) {
+                    facility.setClosingTime(Time.valueOf(closingTimeStr + ":00"));
+                } else {
+                    facility.setClosingTime(Time.valueOf("22:00:00"));
+                }
+                
                 facility.setAvailable(true);
                 
                 facilityDAO.create(facility);
                 response.sendRedirect(request.getContextPath() + "/manager/facilities?success=Facility created");
                 
             } else if ("update".equals(action)) {
+                // Update existing facility
                 int facilityId = Integer.parseInt(request.getParameter("facilityId"));
                 Facility facility = facilityDAO.findById(facilityId).orElse(null);
                 
@@ -123,9 +140,22 @@ public class ManageFacilityServlet extends HttpServlet {
                     facility.setCapacity(Integer.parseInt(request.getParameter("capacity")));
                     facility.setHourlyRate(new BigDecimal(request.getParameter("hourlyRate")));
                     facility.setImageUrl(request.getParameter("imageUrl"));
-                    facility.setOpeningTime(Time.valueOf(request.getParameter("openingTime") + ":00"));
-                    facility.setClosingTime(Time.valueOf(request.getParameter("closingTime") + ":00"));
-                    facility.setAvailable("true".equals(request.getParameter("isAvailable")));
+                    
+                    // Handle time fields with null check
+                    String openingTimeStr = request.getParameter("openingTime");
+                    String closingTimeStr = request.getParameter("closingTime");
+                    
+                    if (openingTimeStr != null && !openingTimeStr.isEmpty()) {
+                        facility.setOpeningTime(Time.valueOf(openingTimeStr + ":00"));
+                    }
+                    
+                    if (closingTimeStr != null && !closingTimeStr.isEmpty()) {
+                        facility.setClosingTime(Time.valueOf(closingTimeStr + ":00"));
+                    }
+                    
+                    // Handle status
+                    String statusParam = request.getParameter("isAvailable");
+                    facility.setAvailable("true".equals(statusParam));
                     
                     facilityDAO.update(facility);
                     response.sendRedirect(request.getContextPath() + "/manager/facilities?success=Facility updated");
@@ -135,6 +165,8 @@ public class ManageFacilityServlet extends HttpServlet {
             } else {
                 response.sendRedirect(request.getContextPath() + "/manager/facilities");
             }
+        } catch (IllegalArgumentException e) {
+            response.sendRedirect(request.getContextPath() + "/manager/facilities?error=Invalid input: " + e.getMessage());
         } catch (Exception e) {
             response.sendRedirect(request.getContextPath() + "/manager/facilities?error=" + e.getMessage());
         }
